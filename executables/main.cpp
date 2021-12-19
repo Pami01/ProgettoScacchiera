@@ -7,5 +7,8 @@ int main(){
 
     std::cout<<"hello world";
     Board b;
+    
+    int a=3;
     return 0;
+
 }

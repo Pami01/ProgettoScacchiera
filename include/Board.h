@@ -2,7 +2,6 @@
 #define BOARD_H
 
 #include "Piece.h"
-#include <iostream>
 #include <vector>
 
 
@@ -16,7 +15,7 @@ class Board {
 
       Board();
       Board(std::vector<Piece> v);
-
+      
       void move();
 };
 

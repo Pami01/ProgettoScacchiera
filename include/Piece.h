@@ -1,10 +1,10 @@
 #ifndef PIECE_H
 #define PIECE_H
-
+#include "Position.h"
 
 
 enum Side {
-   BIANCO=1, NERO=0
+   WHITE=1, BLACK=0
 };
 
 

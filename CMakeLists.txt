@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 
 project(ProgettoScacchiera)
 
-include_directories(include src)
+include_directories(include src executables)
 
-add_executable(scacchiera main.cpp src/piece.cpp src/board.cpp src/position.cpp)
+add_executable(scacchiera executables/main.cpp src/piece.cpp src/board.cpp src/position.cpp)
 
 add_library(piece include/piece.h src/piece.cpp)
 add_library(board include/board.h src/board.cpp)

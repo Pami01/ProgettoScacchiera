@@ -4,7 +4,7 @@
 #include "../include/board.h"
 
 
-Board::Board() : pieces(std::vector<Piece>()) {
+Board::Board() : pieces(std::vector<Piece>()), turn(WHITE) {
 }
 
 
