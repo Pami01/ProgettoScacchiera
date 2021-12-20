@@ -1,22 +1,22 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include "Piece.h"
 #include <vector>
+#include "Piece.h"
 
+class Board
+{
+private:
+   //TODO Controllare presenza pezzi nella scacchiera
+   std::vector<Piece> pieces;
+   //TODO Verificare efficenza booleano per turno
+   Side turn;
 
-class Board {
-   private:
-      //TODO Controllare presenza pezzi nella scacchiera 
-      std::vector<Piece> pieces;
-      //TODO Verificare efficenza booleano per turno 
-      Side turn;
-   public:
+public:
+   Board();
+   Board(std::vector<Piece> v);
 
-      Board();
-      Board(std::vector<Piece> v);
-      
-      void move();
+   void move();
 };
 
 #endif
