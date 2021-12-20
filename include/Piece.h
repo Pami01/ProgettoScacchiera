@@ -2,21 +2,23 @@
 #define PIECE_H
 
 #include "Position.h"
-
-enum Side
+namespace Chess
 {
-   WHITE = 1,
-   BLACK = 0
-};
+   enum Side
+   {
+      WHITE = 1,
+      BLACK = 0
+   };
 
-class Piece
-{
-private:
-   Position p;
-   Side s;
+   class Piece
+   {
+   private:
+      Position p;
+      Side s;
 
-public:
-   virtual bool move();
-};
+   public:
+      virtual bool move();
+   };
+}
 
 #endif

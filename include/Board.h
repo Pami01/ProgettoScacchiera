@@ -4,19 +4,22 @@
 #include <vector>
 #include "Piece.h"
 
-class Board
+namespace Chess
 {
-private:
-   //TODO Controllare presenza pezzi nella scacchiera
-   std::vector<Piece> pieces;
-   //TODO Verificare efficenza booleano per turno
-   Side turn;
+   class Board
+   {
+   private:
+      //TODO Controllare presenza pezzi nella scacchiera
+      std::vector<Piece> pieces;
+      //TODO Verificare efficenza booleano per turno
+      Side turn;
 
-public:
-   Board();
-   Board(std::vector<Piece> v);
+   public:
+      Board();
+      Board(std::vector<Piece> v);
 
-   void move();
-};
+      void move();
+   };
+}
 
 #endif
