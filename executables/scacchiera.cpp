@@ -5,9 +5,5 @@
 int main()
 {
 
-    std::cout << "hello world";
-    Chess::Board b;
-
-    int a = 3;
     return 0;
 }

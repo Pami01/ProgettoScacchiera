@@ -2,6 +2,8 @@
 #define BOARD_H
 
 #include <vector>
+#include <ostream>
+#include "Position.h"
 #include "Piece.h"
 
 namespace Chess
@@ -9,16 +11,28 @@ namespace Chess
    class Board
    {
    private:
-      //TODO Controllare presenza pezzi nella scacchiera
-      std::vector<Piece> pieces;
-      //TODO Verificare efficenza booleano per turno
-      Side turn;
+      std::vector<Piece> _pieces;
+      Side _turn;
+
+   private:
+      // Prepara la posizione iniziale riempiendo il vector _pieces
+      void initialize(void);
 
    public:
+      // Costruttore che inizializza una partita
       Board();
-      Board(std::vector<Piece> v);
+      // Costruttore che inizializza una partita da una specifica posizione
+      Board(const std::vector<Piece> &pieces);
 
-      void move();
+      // Eccezione per indicare una mossa invalida o illegale
+      class InvalidMoveException;
+
+      // Sposta un pezzo dalla posizione 'from' alla posizione 'to'
+      // Lancia una 'InvalidMoveException', se per qualche motivo la mossa non è valida
+      void move(const Position &from, const Position &to);
+
+      // Stampa la scacchiera
+      friend std::ostream &operator<<(std::ostream &os, const Board &b);
    };
 }
 

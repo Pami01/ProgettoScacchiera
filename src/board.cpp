@@ -5,9 +5,6 @@
 
 namespace Chess
 {
-   Board::Board() : pieces(std::vector<Piece>()), turn(WHITE)
-   {
-   }
 
 }
 

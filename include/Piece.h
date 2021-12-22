@@ -1,23 +1,51 @@
 #ifndef PIECE_H
 #define PIECE_H
 
+#include <vector>
 #include "Position.h"
+
 namespace Chess
 {
+   // Enum che rappresenta lo schieramento di un pezzo
    enum Side
    {
       WHITE = 1,
       BLACK = 0
    };
-
+   // Enum che rappresenta il pezzo stesso
+   enum PieceType
+   {
+      PAWN = 'P',
+      KNIGHT = 'C',
+      BISHOP = 'A',
+      ROOK = 'T',
+      QUEEN = 'D',
+      KING = 'R'
+   };
+   // Classe Piece che rappresenta un pezzo in tutte le sue caratteristiche
    class Piece
    {
    private:
-      Position p;
-      Side s;
+      Position _position;
+      Side _side;
+      PieceType _type;
 
    public:
-      virtual bool move();
+      Piece(const Position &position, const Side &side, const PieceType &type);
+
+      // Getter di _position
+      Position position(void) const;
+      // Getter di _side
+      Side side(void) const;
+      // Getter di _type
+      PieceType type(void) const;
+
+      // Sposta il pezzo dalla posizione corrente a quella passata per parametro, senza eseguire controlli
+      void move(const Position &position);
+
+      // Ritorna tutte le posizioni possibili in cui il pezzo corrente si potrebbe muovere,
+      //    senza considerare gli altri pezzi nella scacchiera
+      std::vector<Position> *get_moves(void) const;
    };
 }
 
