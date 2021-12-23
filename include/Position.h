@@ -24,7 +24,8 @@ namespace Chess
 
    public:
       // Inizializza l'oggetto tramite il metodo privato 'decode_arithmetic_notation'
-      Position(const std::string &arithmetic_notation);
+      // Passo un 'const char *' per avere una conversione implicita che con una stringa non avrei
+      Position(const char *arithmetic_notation);
 
       // Eccezione che indica che la posizione non è valida
       class InvalidPositionException;
