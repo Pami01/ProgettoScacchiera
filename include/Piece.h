@@ -30,8 +30,16 @@ namespace Chess
       Side _side;
       PieceType _type;
 
+   private:
+      void get_king_moves(std::vector<Position> *p) const;
+      void get_queen_moves(std::vector<Position> *p) const;
+      void get_rook_moves(std::vector<Position> *p) const;
+      void get_bishop_moves(std::vector<Position> *p) const;
+      void get_knight_moves(std::vector<Position> *p) const;
+      void get_pawn_moves(std::vector<Position> *p) const;
+
    public:
-      Piece(const Position &position, const Side &side, const PieceType &type);
+      Piece(const Position position, const Side side, const PieceType type);
 
       // Getter di _position
       Position position(void) const;
@@ -41,7 +49,7 @@ namespace Chess
       PieceType type(void) const;
 
       // Sposta il pezzo dalla posizione corrente a quella passata per parametro, senza eseguire controlli
-      void move(const Position &position);
+      void move(const Position position);
 
       // Ritorna tutte le posizioni possibili in cui il pezzo corrente si potrebbe muovere,
       //    senza considerare gli altri pezzi nella scacchiera
