@@ -8,7 +8,8 @@
 
 namespace Chess
 {
-   enum Ending {
+   enum Ending
+   {
       // false se non è finita la partita
       NONE = 0,
       // patte (1 - 5)
@@ -36,7 +37,8 @@ namespace Chess
       // Cambia il turno
       void toggle_turn(void);
       // Cerca il pezzo ad una certa posizione e lo ritorna
-      Piece find_piece(const Position &position);
+      // Lancia una PieceNotFoundException se alla posizione inserita non c'è alcun pezzo
+      Piece find_piece(const Position &position) const;
 
    public:
       // Costruttore che inizializza una partita
@@ -46,15 +48,16 @@ namespace Chess
 
       // Eccezione per indicare una mossa invalida o illegale
       class InvalidMoveException;
+      // Eccezione che viene lanciata quando non si è trovato un pezzo
+      class PieceNotFoundException;
 
-      // Getter per i pezzi del bianco
-      std::vector<Piece> pieces_white(void) const;
-      // Getter per i pezzi del nero
-      std::vector<Piece> pieces_black(void) const;
+      // Getter per i pezzi di nero e bianco, in base al side passato
+      // Copia i pezzi nel vector passato come output
+      void pieces(Side side, std::vector<Piece> &output) const;
 
       // Sposta un pezzo dalla posizione 'from' alla posizione 'to'
       // Lancia una 'InvalidMoveException', se per qualche motivo la mossa non è valida
-      void move(const Position &from, const Position &to);
+      void move(const Position from, const Position to);
 
       // Ritorna 'Ending::NONE = 0' se la partita non è finita, altrimenti ritorna il modo in cui è finita la partita
       Ending is_game_over(void) const;
