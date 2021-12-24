@@ -19,7 +19,6 @@ namespace Chess
       void decode_arithmetic_notation(const std::string &arithmetic_notation);
 
    public:
-      // Costruttore privato (serve solo per il metodo move, interno alla classe)
       // Inizializza l'oggetto controllando la validità delle coordinate
       Position(const short x, const short y);
       // Inizializza l'oggetto tramite il metodo privato 'decode_arithmetic_notation'
