@@ -36,9 +36,9 @@ namespace Chess
       Position move(const short x_increment, const short y_increment) const;
 
       // Operatore di uguaglianza
-      bool operator==(const Position &other);
+      bool operator==(const Position &other) const;
       // Operatore di disuguaglianza
-      bool operator!=(const Position &other);
+      bool operator!=(const Position &other) const;
    };
 }
 

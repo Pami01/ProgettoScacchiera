@@ -8,10 +8,13 @@
 namespace Chess
 {
    /*       ECCEZIONI       */
-   class Board::InvalidMoveException
+   class Board::IllegalMoveException
    {
    };
    class Board::PieceNotFoundException
+   {
+   };
+   class Board::WrongTurnException
    {
    };
    /*       COSTRUTTORI       */
@@ -73,7 +76,7 @@ namespace Chess
    }
    /*       GETTERS       */
    // TODO Testare la correttezza
-   void Board::pieces(Side side, std::vector<Piece> &output) const
+   void Board::get_pieces(Side side, std::vector<Piece> &output) const
    {
       output.reserve(_pieces.size());
       std::copy_if(_pieces.begin(),
@@ -83,6 +86,34 @@ namespace Chess
                    {
                       return p.side() == side;
                    });
+   }
+
+   bool Board::is_controlled(const Position &position, const Side &side) const
+   {
+   }
+
+   bool Board::is_pinned(const Piece &piece) const
+   {
+      // Prendo tutti i pezzi che potrebbero causare il 'pin'
+      std::vector<Piece> possible_pinning_pieces;
+      possible_pinning_pieces.reserve(_pieces.size());
+      std::copy_if(_pieces.begin(),
+                   _pieces.end(),
+                   possible_pinning_pieces.begin(),
+                   [piece](const Piece &p)
+                   {
+                      // Gli unici pezzi che possono pinnare sono alfiere, regina e torre
+                      return p.side() != piece.side() &&
+                             (p.type() == BISHOP || p.type() == QUEEN || p.type() == ROOK);
+                   });
+      // Ciclo i pezzi e vedo se qualcuno 'pinna'
+      for (const Piece &p : possible_pinning_pieces)
+      {
+         std::vector<Position> moves;
+         p.get_moves(moves);
+         // TODO Controlla tutti i pezzi se 'pinnano' piece e ritorna true in caso favorevole
+      }
+      return false;
    }
    /*       OVERLOAD OPERATORI       */
    // TODO Testare la correttezza
@@ -95,7 +126,7 @@ namespace Chess
          {
             try
             {
-               Piece p = b.find_piece({7 - i, j});
+               Piece p = b.find_piece({(short)(7 - i), j});
                os << (p.side() == WHITE ? (char)p.side() : (char)(p.side() + 32));
             }
             catch (Board::PieceNotFoundException e)
@@ -109,6 +140,51 @@ namespace Chess
       os << "  ";
       for (char c = 'A'; c <= 'H'; c++)
          os << c;
+      return os;
+   }
+   /*       FUNZIONALITA' DI GIOCO       */
+
+   void Board::move(const Position from, const Position to)
+   {
+      // Lancia una 'PieceNotFoundException' se il pezzo non viene trovato
+      Piece p_from = find_piece(from);
+      // Controlla se è il turno del pezzo selezionato
+      if (p_from.side() != _turn)
+         throw WrongTurnException();
+      // Controlla se la posizione finale è tra quelle in cui si può muovere il pezzo selezionato
+      std::vector<Position> moves;
+      p_from.get_moves(moves);
+
+      auto it =
+          std::find_if(moves.begin(),
+                       moves.end(),
+                       [to](const Position pos)
+                       {
+                          return pos == to;
+                       });
+      if (it == moves.end())
+         throw IllegalMoveException();
+      // Controlla se la casa di arrivo contiene un pezzo dello stesso schieramento di quello selezionato
+      try
+      {
+         Piece p_to = find_piece(to);
+         if (p_to.side() == p_from.side())
+            throw IllegalMoveException();
+      }
+      catch (PieceNotFoundException e)
+      {
+         // Si arriva qua se ci si sta muovendo in una casa vuota
+         // Non si fa niente perché significa che il pezzo si potrebbe muovere in questa posizione
+      }
+
+      // TODO Controllo interazioni con gli altri pezzi
+      // Controllo 'pin'
+      if (is_pinned(p_from))
+         throw IllegalMoveException();
+      // Controllo se il re si può muovere senza finire sotto scacco
+      if (p_from.type() == KING && is_controlled(to, Side(!p_from.side())))
+         throw IllegalMoveException();
+      // TODO Controllo pedone
    }
 }
 

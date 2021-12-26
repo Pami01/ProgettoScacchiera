@@ -39,6 +39,10 @@ namespace Chess
       // Cerca il pezzo ad una certa posizione e lo ritorna
       // Lancia una PieceNotFoundException se alla posizione inserita non c'è alcun pezzo
       Piece find_piece(const Position &position) const;
+      // Ritorna true se il pezzo passato per parametro non può muoversi senza mettere sotto scacco il re
+      bool is_pinned(const Piece &piece) const;
+      // Ritrona true se un pezzo di 'side' controlla la posizione 'position'
+      bool is_controlled(const Position &position, const Side &side) const;
 
    public:
       // Costruttore che inizializza una partita
@@ -47,16 +51,18 @@ namespace Chess
       Board(const std::vector<Piece> &pieces);
 
       // Eccezione per indicare una mossa invalida o illegale
-      class InvalidMoveException;
+      class IllegalMoveException;
       // Eccezione che viene lanciata quando non si è trovato un pezzo
       class PieceNotFoundException;
+      // Eccezione che viene lanciata se si tenta di muovere un pezzo nel turno che non è il suo
+      class WrongTurnException;
 
       // Getter per i pezzi di nero e bianco, in base al side passato
       // Copia i pezzi nel vector passato come output
-      void pieces(Side side, std::vector<Piece> &output) const;
+      void get_pieces(Side side, std::vector<Piece> &output) const;
 
       // Sposta un pezzo dalla posizione 'from' alla posizione 'to'
-      // Lancia una 'InvalidMoveException', se per qualche motivo la mossa non è valida
+      // Lancia una eccezione, se per qualche motivo la mossa non è valida
       void move(const Position from, const Position to);
 
       // Ritorna 'Ending::NONE = 0' se la partita non è finita, altrimenti ritorna il modo in cui è finita la partita

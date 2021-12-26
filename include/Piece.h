@@ -53,7 +53,7 @@ namespace Chess
 
       // Ritorna tutte le posizioni possibili in cui il pezzo corrente si potrebbe muovere,
       //    senza considerare gli altri pezzi nella scacchiera
-      std::vector<Position> *get_moves(void) const;
+      void get_moves(std::vector<Position> &v) const;
    };
 }
 
