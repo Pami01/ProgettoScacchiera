@@ -179,19 +179,77 @@ namespace Chess
                i = 0;
                j = -1;
             }
-            else if(i==0 && j ==-1){
-               ended=false;
+            else if (i == 0 && j == -1)
+            {
+               ended = false;
             }
          }
       }
       return;
    }
 
-   
-   void Piece::get_queen_moves(std::vector<Position> &v) const{
+   void Piece::get_queen_moves(std::vector<Position> &v) const
+   {
       get_rook_moves(v);
       get_bishop_moves(v);
       return;
+   }
+
+   void Piece::get_knight_moves(std::vector<Position> &v) const
+   {
+      int i = 1, j = 2;
+      bool ended = true;
+      while (ended)
+      {
+         try
+         {
+            v.push_back(_position.move(i, j));
+         }
+         catch (Position::InvalidPositionException e)
+         {
+         }
+         if (i == 1 && j == 2)
+         {
+            i = 2;
+            j = 1;
+         }
+         else if (i == 2 && j == 1)
+         {
+            j = -1;
+         }
+         else if (i == 2 && j == -1)
+         {
+            i = 1;
+            j = -2;
+         }
+         else if (i == 1 && j == -2)
+         {
+            i=-1;
+            j=2;
+         }
+         else if (i == -1 && j == 2)
+         {
+            j=-2;
+         }
+         else if (i == -1 && j == -2)
+         {
+            i=-2;
+            j=1;
+         }
+         else if (i == -2 && j == 1)
+         {
+            j=-1;
+         }
+         else if(i==-2 && j==-1){
+            ended=false;
+         }
+      }
+      return;
+   }
+
+   void Piece::get_pawn_moves(std::vector<Position> &v) const{
+      if(side){
+      }
    }
 
 }
