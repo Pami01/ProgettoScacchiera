@@ -224,32 +224,71 @@ namespace Chess
          }
          else if (i == 1 && j == -2)
          {
-            i=-1;
-            j=2;
+            i = -1;
+            j = 2;
          }
          else if (i == -1 && j == 2)
          {
-            j=-2;
+            j = -2;
          }
          else if (i == -1 && j == -2)
          {
-            i=-2;
-            j=1;
+            i = -2;
+            j = 1;
          }
          else if (i == -2 && j == 1)
          {
-            j=-1;
+            j = -1;
          }
-         else if(i==-2 && j==-1){
-            ended=false;
+         else if (i == -2 && j == -1)
+         {
+            ended = false;
          }
       }
       return;
    }
 
-   void Piece::get_pawn_moves(std::vector<Position> &v) const{
-      if(side){
+   void Piece::get_pawn_moves(std::vector<Position> &v) const
+   {
+      int move = 0;
+      if (_side)
+      {
+         move = 1;
+         if (_position.y == 1)
+         {
+            v.push_back(_position.move(0, 2 * move));
+         }
       }
+      else
+      {
+         move = -1;
+         if (_position.y == 6)
+         {
+            v.push_back(_position.move(0, -2 * move));
+         }
+      }
+      try
+      {
+         v.push_back(_position.move(0, move));
+      }
+      catch (Position::InvalidPositionException e)
+      {
+      }
+      try
+      {
+         v.push_back(_position.move(1, move));
+      }
+      catch (Position::InvalidPositionException e)
+      {
+      }
+      try
+      {
+         v.push_back(_position.move(-1, move));
+      }
+      catch (Position::InvalidPositionException e)
+      {
+      }
+      return;
    }
 
 }

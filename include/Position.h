@@ -8,15 +8,15 @@ namespace Chess
    struct Position
    {
    private:
-      short _x, _y;
-
-   private:
       // Controlla se l'oggetto è valido (x e y compresi tra 0 e 7)
       bool is_valid(void) const;
       // Converte la notazione aritmetica (A1, B7, H6, ...) e inizializza le variabili private
       //    alle coordinate corrette ({0, 0}, {1, 6}, {7, 5}, ...)
       // Lancia una 'InvalidPositionException' se la posizione inserita non è valida
       void decode_arithmetic_notation(const std::string &arithmetic_notation);
+
+   public:
+      short x, y;
 
    public:
       Position();
@@ -30,7 +30,9 @@ namespace Chess
       Position(const char *arithmetic_notation);
 
       // Eccezione che indica che la posizione non è valida
-      class InvalidPositionException{};
+      class InvalidPositionException
+      {
+      };
 
       // Ritorna una nuova posizione data dall'incremento di quella corrente
       //    con le coordinate passate per parametro
