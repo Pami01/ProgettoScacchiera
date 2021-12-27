@@ -19,6 +19,7 @@ namespace Chess
       void decode_arithmetic_notation(const std::string &arithmetic_notation);
 
    public:
+      Position();
       // Costruttore privato (serve solo per il metodo move, interno alla classe)
       // Inizializza l'oggetto controllando la validità delle coordinate
       Position(const short x, const short y);
@@ -29,16 +30,17 @@ namespace Chess
       Position(const char *arithmetic_notation);
 
       // Eccezione che indica che la posizione non è valida
-      class InvalidPositionException;
+      class InvalidPositionException{};
 
       // Ritorna una nuova posizione data dall'incremento di quella corrente
       //    con le coordinate passate per parametro
+      // Lancia una 'InvalidPositionException' se la posizione inserita non è valida
       Position move(const short x_increment, const short y_increment) const;
 
       // Operatore di uguaglianza
-      bool operator==(const Position &other);
+      bool operator==(const Position &other) const;
       // Operatore di disuguaglianza
-      bool operator!=(const Position &other);
+      bool operator!=(const Position &other) const;
    };
 }
 
