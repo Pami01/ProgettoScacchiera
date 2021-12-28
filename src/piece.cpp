@@ -267,26 +267,15 @@ namespace Chess
             v.push_back(_position.move(0, -2 * move));
          }
       }
-      try
+      for (int i = -1; i < 2; i++)
       {
-         v.push_back(_position.move(0, move));
-      }
-      catch (Position::InvalidPositionException e)
-      {
-      }
-      try
-      {
-         v.push_back(_position.move(1, move));
-      }
-      catch (Position::InvalidPositionException e)
-      {
-      }
-      try
-      {
-         v.push_back(_position.move(-1, move));
-      }
-      catch (Position::InvalidPositionException e)
-      {
+         try
+         {
+            v.push_back(_position.move(i, move));
+         }
+         catch (Position::InvalidPositionException e)
+         {
+         }
       }
       return;
    }
