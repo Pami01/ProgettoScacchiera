@@ -65,7 +65,7 @@ namespace Chess
       {
          for (int j = -1; j < 2; j++)
          {
-            if (i != 0 && i != 0)
+            if (i != 0 && j != 0)
                try
                {
                   v.push_back(_position.move(i, j));
@@ -73,6 +73,17 @@ namespace Chess
                catch (Position::InvalidPositionException e)
                {
                }
+         }
+      }
+      for (int i = -2; i < 3; i++)
+      {
+         try
+         {
+            if (i != 0)
+               v.push_back(_position.move(i, 0));
+         }
+         catch (Position::InvalidPositionException e)
+         {
          }
       }
    }
