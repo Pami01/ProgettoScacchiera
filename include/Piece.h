@@ -55,6 +55,8 @@ namespace Chess
       //    senza considerare gli altri pezzi nella scacchiera
       void get_moves(std::vector<Position> &v) const;
    };
+
+   Side operator!(const Side &side);
 }
 
 #endif

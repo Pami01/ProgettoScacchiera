@@ -31,6 +31,15 @@ namespace Chess
       std::vector<Piece> _pieces;
       Side _turn;
 
+      // Variabili logiche
+      // controlli arrocco
+      bool _can_white_castle_left{true};
+      bool _can_white_castle_right{true};
+      bool _can_black_castle_left{true};
+      bool _can_black_castle_right{true};
+      // ultima colonna pedone (solo per en passant)
+      short _last_pawn_move{-1};
+
    private:
       // Prepara la posizione iniziale riempiendo il vector _pieces
       void initialize(void);
@@ -39,10 +48,12 @@ namespace Chess
       // Cerca il pezzo ad una certa posizione e lo ritorna
       // Lancia una PieceNotFoundException se alla posizione inserita non c'è alcun pezzo
       Piece find_piece(const Position &position) const;
-      // Ritorna true se il pezzo passato per parametro non può muoversi senza mettere sotto scacco il re
-      bool is_pinned(const Piece &piece) const;
-      // Ritrona true se un pezzo di 'side' controlla la posizione 'position'
-      bool is_controlled(const Position &position, const Side &side) const;
+      // Ritorna true se la posizione corrente ha generato uno scacco al re dello schieramento side
+      bool is_check(const Side &side, const std::vector<Piece> &pieces) const;
+      // Ritorna true se il pezzo di partenza è ostruito da un altro pezzo cercando di arrivare alla posizione to
+      bool is_obstructed(const Piece &p, const Position &to, const std::vector<Piece> &pieces) const;
+      // Metodo che elimina il pezzo alla posizione indicata dal vettore _pieces
+      void kill_piece(const Position &position);
 
    public:
       // Costruttore che inizializza una partita

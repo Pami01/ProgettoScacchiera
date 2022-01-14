@@ -7,8 +7,8 @@ namespace Chess
 {
    struct Position
    {
-   private:
-      short _x, _y;
+   public:
+      short x, y;
 
    private:
       // Controlla se l'oggetto è valido (x e y compresi tra 0 e 7)
