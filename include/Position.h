@@ -7,20 +7,18 @@ namespace Chess
 {
    struct Position
    {
+   public:
+      short x, y;
+
    private:
       // Controlla se l'oggetto è valido (x e y compresi tra 0 e 7)
       bool is_valid(void) const;
       // Converte la notazione aritmetica (A1, B7, H6, ...) e inizializza le variabili private
-      //    alle coordinate corrette ({0, 0}, {1, 6}, {7, 5}, ...)
+      //    alle coordinate corrette ({0, 0}, {6, 1}, {5, }, ...)
       // Lancia una 'InvalidPositionException' se la posizione inserita non è valida
       void decode_arithmetic_notation(const std::string &arithmetic_notation);
 
    public:
-      short x, y;
-
-   public:
-      Position();
-      // Costruttore privato (serve solo per il metodo move, interno alla classe)
       // Inizializza l'oggetto controllando la validità delle coordinate
       Position(const short x, const short y);
       // Inizializza l'oggetto tramite il metodo privato 'decode_arithmetic_notation'
