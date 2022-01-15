@@ -33,12 +33,12 @@ namespace Chess
       PieceType _type;
 
    private:
-      void get_king_moves(std::vector<Position> *p) const;
-      void get_queen_moves(std::vector<Position> *p) const;
-      void get_rook_moves(std::vector<Position> *p) const;
-      void get_bishop_moves(std::vector<Position> *p) const;
-      void get_knight_moves(std::vector<Position> *p) const;
-      void get_pawn_moves(std::vector<Position> *p) const;
+      void get_king_moves(std::vector<Position> &v) const;
+      void get_queen_moves(std::vector<Position> &v) const;
+      void get_rook_moves(std::vector<Position> &v) const;
+      void get_bishop_moves(std::vector<Position> &v) const;
+      void get_knight_moves(std::vector<Position> &v) const;
+      void get_pawn_moves(std::vector<Position> &v) const;
 
    public:
       Piece(const Position position, const Side side, const PieceType type);

@@ -28,10 +28,11 @@ namespace Chess
       Position(const char *arithmetic_notation);
 
       // Eccezione che indica che la posizione non è valida
-      class InvalidPositionException;
+      class InvalidPositionException{};
 
       // Ritorna una nuova posizione data dall'incremento di quella corrente
       //    con le coordinate passate per parametro
+      // Lancia una 'InvalidPositionException' se la posizione inserita non è valida
       Position move(const short x_increment, const short y_increment) const;
 
       // Operatore di uguaglianza
