@@ -31,6 +31,15 @@ namespace Chess
       std::vector<Piece> _pieces;
       Side _turn;
 
+      // Variabili logiche
+      // controlli arrocco
+      bool _can_white_castle_left{true};
+      bool _can_white_castle_right{true};
+      bool _can_black_castle_left{true};
+      bool _can_black_castle_right{true};
+      // ultima colonna pedone (solo per en passant)
+      short _last_pawn_move{-1};
+
    private:
       // Prepara la posizione iniziale riempiendo il vector _pieces
       void initialize(void);
@@ -39,6 +48,12 @@ namespace Chess
       // Cerca il pezzo ad una certa posizione e lo ritorna
       // Lancia una PieceNotFoundException se alla posizione inserita non c'è alcun pezzo
       Piece find_piece(const Position &position) const;
+      // Ritorna true se la posizione corrente ha generato uno scacco al re dello schieramento side
+      bool is_check(const Side &side, const std::vector<Piece> &pieces) const;
+      // Ritorna true se il pezzo di partenza è ostruito da un altro pezzo cercando di arrivare alla posizione to
+      bool is_obstructed(const Piece &p, const Position &to, const std::vector<Piece> &pieces) const;
+      // Metodo che elimina il pezzo alla posizione indicata dal vettore _pieces
+      void kill_piece(const Position &position);
 
    public:
       // Costruttore che inizializza una partita
@@ -47,16 +62,18 @@ namespace Chess
       Board(const std::vector<Piece> &pieces);
 
       // Eccezione per indicare una mossa invalida o illegale
-      class InvalidMoveException;
+      class IllegalMoveException;
       // Eccezione che viene lanciata quando non si è trovato un pezzo
       class PieceNotFoundException;
+      // Eccezione che viene lanciata se si tenta di muovere un pezzo nel turno che non è il suo
+      class WrongTurnException;
 
       // Getter per i pezzi di nero e bianco, in base al side passato
       // Copia i pezzi nel vector passato come output
-      void pieces(Side side, std::vector<Piece> &output) const;
+      void get_pieces(Side side, std::vector<Piece> &output) const;
 
       // Sposta un pezzo dalla posizione 'from' alla posizione 'to'
-      // Lancia una 'InvalidMoveException', se per qualche motivo la mossa non è valida
+      // Lancia una eccezione, se per qualche motivo la mossa non è valida
       void move(const Position from, const Position to);
 
       // Ritorna 'Ending::NONE = 0' se la partita non è finita, altrimenti ritorna il modo in cui è finita la partita

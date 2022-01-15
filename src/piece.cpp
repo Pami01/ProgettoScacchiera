@@ -291,6 +291,12 @@ namespace Chess
       return;
    }
 
+
+   // Overload operatore toggle per lo schieramento
+   Side operator!(const Side &side)
+   {
+      return Side(!side);
+   }
 }
 
 #endif
