@@ -17,7 +17,6 @@ namespace Chess
       _50_MOVE_RULE,
       INSUFFICIENT_MATERIAL,
       REPETITION,
-      AGREEMENT,
       // Vittorie (10 - 11)
       // Il bianco ha mattato
       WHITE_CHECKMATE = 10,
@@ -31,7 +30,7 @@ namespace Chess
       std::vector<Piece> _pieces;
       Side _turn;
 
-      // Variabili logiche
+      /* VARIABILI UTILI PER MANTENERE LO STATO DELLA PARTITA */
       // controlli arrocco
       bool _can_white_castle_left{true};
       bool _can_white_castle_right{true};
@@ -39,6 +38,9 @@ namespace Chess
       bool _can_black_castle_right{true};
       // ultima colonna pedone (solo per en passant)
       short _last_pawn_move{-1};
+      // regola delle 50 mosse
+      short _50_move_count;
+      Side _50_move_start;
 
    private:
       // Prepara la posizione iniziale riempiendo il vector _pieces
@@ -56,6 +58,12 @@ namespace Chess
       void kill_piece(const Position &position);
       // Ritorna true il pezzo alla posizione from si può muovere nella posizione to, false altrimenti
       bool can_move(const Piece &p_from, const Position &to) const;
+
+      /* CONTROLLO FINALI */
+      // Controlla se la posizione per il lato side è scacco matto o stallo o se è una posizione giocabile
+      Ending is_checkmate_stalemate(const Side &side) const;
+      // Controlla se la posizione non può essere vinta da nessuno a causa di materiale insufficiente
+      bool is_insufficient_material() const;
 
    public:
       // Costruttore che inizializza una partita
@@ -77,6 +85,7 @@ namespace Chess
       void move(const Position from, const Position to, const PieceType promotion_type = PieceType::UNSELECTED);
 
       // Ritorna 'Ending::NONE = 0' se la partita non è finita, altrimenti ritorna il modo in cui è finita la partita
+      // Controlla solo il giocatore del side = _turn
       Ending is_game_over(void) const;
 
       // Stampa la scacchiera

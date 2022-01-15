@@ -11,6 +11,7 @@ namespace Chess
    {
       return Side(!side);
    }
+
    bool is_valid_piece_type(const PieceType &type)
    {
       switch (type)
@@ -26,7 +27,6 @@ namespace Chess
          return false;
       }
    }
-
 }
 
 #endif

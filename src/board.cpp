@@ -152,6 +152,7 @@ namespace Chess
                               { return p.position() == position; }));
    }
 
+   // TODO Testare la correttezza
    bool Board::can_move(const Piece &p_from, const Position &to) const
    {
       const Position &from = p_from.position();
@@ -290,6 +291,117 @@ namespace Chess
       return true;
    }
 
+   /* CONTROLLO FINALI */
+
+   bool Board::is_insufficient_material() const
+   {
+      short white_bishop_color = -1,
+            black_bishop_color = -1;
+      bool has_white_night = false,
+           has_black_night = false;
+
+      for (const Piece &p : _pieces)
+      {
+         // C'è ancora abbastanza materiale
+         switch (p.type())
+         {
+         case PAWN:
+         case ROOK:
+         case QUEEN:
+            return false;
+         case BISHOP:
+            short bishop_color = (p.position().x + p.position().y) % 2;
+            if (p.side() == WHITE)
+            {
+               // Alfiere e cavallo bastano per mattare
+               if (has_white_night)
+                  return false;
+
+               // Se non è stato impostato, imposto il colore dell'alfiere
+               if (white_bishop_color == -1)
+                  white_bishop_color = bishop_color;
+               else if (white_bishop_color != bishop_color)
+                  /* se c'è un alfiere del colore opposto a questo, la partita non è ancora patta */
+                  return false;
+            }
+            else
+            {
+               // Alfiere e cavallo bastano per mattare
+               if (has_black_night)
+                  return false;
+
+               // Se non è stato impostato, imposto il colore dell'alfiere
+               if (black_bishop_color == -1)
+                  black_bishop_color = bishop_color;
+               else if (black_bishop_color != bishop_color)
+                  /* se c'è un alfiere del colore opposto a questo, la partita non è ancora patta */
+                  return false;
+            }
+            break;
+         case KNIGHT:
+            if (p.side() == WHITE)
+            {
+               // Due cavalli / Un cavallo e un alfiere  bastano per mattare
+               if (has_white_night || white_bishop_color == -1)
+                  return false;
+
+               has_white_night = true;
+            }
+            else
+            {
+               // Due cavalli / Un cavallo e un alfiere  bastano per mattare
+               if (has_black_night || black_bishop_color == -1)
+                  return false;
+
+               has_black_night = true;
+            }
+         }
+      }
+      return true;
+   }
+
+   Ending Board::is_checkmate_stalemate(const Side &side) const
+   {
+      // Controllo se il re ha mosse legali
+      const Piece king = *std::find_if(_pieces.begin(), _pieces.end(), [&side](const Piece &p)
+                                       { return p.type() == KING && p.side() == side; });
+      std::vector<Position> moves;
+      king.get_moves(moves);
+      // Controllo le mosse del re all'inizio per una questione di ottimizzazione
+      for (const Position &pos : moves)
+      {
+         // Se il re ha mosse legali la partita non è finita
+         if (can_move(king, pos))
+            return NONE;
+      }
+      // Controllo se ci sono mosse legali tra tutti pezzi di side
+      for (const Piece &p : _pieces)
+      {
+         if (p.type() == KING || p.side() != side)
+            continue;
+
+         std::vector<Position> moves;
+         p.get_moves(moves);
+         for (const Position &pos : moves)
+         {
+            // Se il pezzo ha mosse legali la partita non è finita
+            if (can_move(p, pos))
+               return NONE;
+         }
+      }
+
+      // Se non ci sono mosse legali è scacco matto o stallo
+
+      if (is_check(side, _pieces)) /* Scacco matto */
+      {
+         if (side == WHITE)
+            return BLACK_CHECKMATE; // Il nero ha mattato il bianco
+         return WHITE_CHECKMATE;    // Il bianco ha mattato il nero
+      }
+      // Altrimenti stallo
+      return STALEMATE;
+   }
+
    /*       OVERLOAD OPERATORI       */
    // TODO Testare la correttezza
    std::ostream &operator<<(std::ostream &os, const Board &b)
@@ -319,6 +431,7 @@ namespace Chess
    }
    /*       FUNZIONALITA' DI GIOCO       */
 
+   // TODO Testare la correttezza
    void Board::move(const Position from, const Position to, PieceType promotion_type)
    {
       // Lancia una PieceNotFoundException se non viene trovato un pezzo alla posizione from
@@ -326,6 +439,27 @@ namespace Chess
       if (!can_move(p_from, to))
          throw IllegalMoveException();
 
+      // Gestione regola delle 50 mosse
+      try
+      {
+         find_piece(to);
+         // Sta avvenendo una cattura => resetto il contatore delle 50 mosse
+         _50_move_count = 0;
+      }
+      catch (PieceNotFoundException e)
+      {
+         if (p_from.type() == PAWN)
+            // Se sto muovendo un pedone azzero il contatore
+            _50_move_count = 0;
+         else if (p_from.side() == _50_move_start)
+            // Se non è stato azzerato il contatore, lo incremento (solo una volta ogni 2, visto che una mossa è data da una del bianco e una del nero)
+            _50_move_count++;
+      }
+      // Se il contatore delle mosse è a 0, segnalo chi l'ha inizializzato
+      if (_50_move_count == 0)
+         _50_move_start = p_from.side();
+
+      /* MOVIMENTO EFFETTIVO DEL PEZZO */
       // Elimino il pezzo nella posizione iniziale e in quella finale
       kill_piece(from);
       kill_piece(to);
@@ -333,6 +467,7 @@ namespace Chess
       _pieces.push_back(Piece{to, p_from.side(), p_from.type()});
       // Cambio turno
       toggle_turn();
+      /* FINE MOVIMENTO DEL PEZZO */
 
       /* CASI SPECIALI */
       // En passant, elimino il pezzo mangiato e valorizzo la variabile _last_pawn_move
@@ -351,8 +486,11 @@ namespace Chess
          else
             _last_pawn_move = -1; // valore invalido, non ho appena avanzato un pedone di 2
 
-         if (to.x == (p_from.side() == WHITE ? 7 : 0)) {
-            if (promotion_type == PieceType::UNSELECTED) {
+         // Promozione
+         if (to.x == (p_from.side() == WHITE ? 7 : 0))
+         {
+            if (promotion_type == PieceType::UNSELECTED)
+            {
                char c;
                std::cout << "Inserisci il carattere del pezzo a cui vuoi promuovere: ";
                std::cin >> c;
@@ -384,12 +522,13 @@ namespace Chess
          }
 
          // Se il re sta arroccando muovo la rispettiva torre (il re è già stato spostato)
-         if (abs(from.y - to.y) == 2) {
+         if (abs(from.y - to.y) == 2)
+         {
             short castle_direction = from.y < to.y ? 1 : -1;
             // Elimino la torre
-            kill_piece(Position{from.x, (short) (castle_direction == 1 ? 7 : 0)});
+            kill_piece(Position{from.x, (short)(castle_direction == 1 ? 7 : 0)});
             // Rimpiazzo la torre a fianco al re
-            _pieces.push_back(Piece{{from.x, (short) (from.y + castle_direction)}, p_from.side(), ROOK});
+            _pieces.push_back(Piece{{from.x, (short)(from.y + castle_direction)}, p_from.side(), ROOK});
          }
       }
       else if (p_from.type() == ROOK) /* Tolgo la possibilità di arroccare al re se sto muovendo una torre */
@@ -410,6 +549,18 @@ namespace Chess
          }
       }
    }
+
+   Ending Board::is_game_over(void) const
+   {
+      if (_50_move_count >= 50)
+         return _50_MOVE_RULE;
+      if (is_insufficient_material())
+         return INSUFFICIENT_MATERIAL;
+      // TODO Repetition
+
+      return is_checkmate_stalemate(_turn);
+   }
+
 }
 
 #endif
