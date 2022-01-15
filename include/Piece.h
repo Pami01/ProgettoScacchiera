@@ -9,8 +9,8 @@ namespace Chess
    // Enum che rappresenta lo schieramento di un pezzo
    enum Side
    {
-      WHITE = 1,
-      BLACK = 0
+      WHITE = 0,
+      BLACK = 1
    };
    // Enum che rappresenta il pezzo stesso
    enum PieceType

@@ -19,8 +19,8 @@ namespace Chess
       if (arithmetic_notation.size() != 2)
          throw InvalidPositionException();
 
-      x = arithmetic_notation[1] - 49;
-      y = std::tolower(arithmetic_notation[0]) - 97;
+      x = std::tolower(arithmetic_notation[0]) - 97;
+      y = arithmetic_notation[1] - 49;
 
       if (!(is_valid()))
          throw InvalidPositionException();

@@ -60,11 +60,11 @@ namespace Chess
 
    void Piece::get_king_moves(std::vector<Position> &v) const
    {
-      for (int i = -1; i < 2; i++)
+      for (int i = -1; i <= 1; i++)
       {
-         for (int j = -1; j < 2; j++)
+         for (int j = -1; j <= 1; j++)
          {
-            if (i != 0 && j != 0)
+            if (i != 0 || j != 0)
                try
                {
                   v.push_back(_position.move(i, j));
@@ -74,16 +74,14 @@ namespace Chess
                }
          }
       }
-      for (int i = -2; i < 3; i++)
+      //Aggiunta posizione per arrocco
+      try
       {
-         try
-         {
-            if (i != 0)
-               v.push_back(_position.move(i, 0));
-         }
-         catch (Position::InvalidPositionException e)
-         {
-         }
+         v.push_back(_position.move(2, 0));
+         v.push_back(_position.move(-2, 0));
+      }
+      catch (Position::InvalidPositionException e)
+      {
       }
    }
 
@@ -163,33 +161,37 @@ namespace Chess
    {
       bool ended = true;
       //colonna verticale
-      int i = 1, j = 0;
+      int move_x = 1, move_y = 0;
+      int x=0, y=0;
       while (ended)
       {
          try
          {
-            v.push_back(_position.move(j, i));
-            i += i;
-            j += j;
+            x += move_x;
+            y += move_y;
+            v.push_back(_position.move(x, y));
+            
          }
          catch (Position::InvalidPositionException e)
          {
-            if (i == 1 && j == 0)
+            x=0;
+            y=0;
+            if (move_x == 1 && move_y == 0)
             {
-               i = 0;
-               j = 1;
+               move_x = 0;
+               move_y = 1;
             }
-            else if (i == 0 && j == 1)
+            else if (move_x == 0 && move_y == 1)
             {
-               i = -1;
-               j = 0;
+               move_x = -1;
+               move_y = 0;
             }
-            else if (i == -1 && j == 0)
+            else if (move_x == -1 && move_y == 0)
             {
-               i = 0;
-               j = -1;
+               move_x = 0;
+               move_y = -1;
             }
-            else if (i == 0 && j == -1)
+            else if (move_x == 0 && move_y == -1)
             {
                ended = false;
             }
@@ -261,7 +263,7 @@ namespace Chess
    void Piece::get_pawn_moves(std::vector<Position> &v) const
    {
       int move = 0;
-      if (_side)
+      if (_side == WHITE)
       {
          move = 1;
          if (_position.y == 1)
@@ -274,7 +276,7 @@ namespace Chess
          move = -1;
          if (_position.y == 6)
          {
-            v.push_back(_position.move(0, -2 * move));
+            v.push_back(_position.move(0, 2 * move));
          }
       }
       for (int i = -1; i < 2; i++)
@@ -293,7 +295,7 @@ namespace Chess
    // Overload operatore toggle per lo schieramento
    Side operator!(const Side &side)
    {
-      return Side(!side);
+      return side == WHITE ? BLACK : WHITE;
    }
 
    bool is_valid_piece_type(const PieceType &type)

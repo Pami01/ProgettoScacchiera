@@ -28,7 +28,7 @@ namespace Chess
    {
    private:
       std::vector<Piece> _pieces;
-      Side _turn;
+      Side _turn{WHITE};
 
       /* VARIABILI UTILI PER MANTENERE LO STATO DELLA PARTITA */
       // controlli arrocco
@@ -39,7 +39,7 @@ namespace Chess
       // ultima colonna pedone (solo per en passant)
       short _last_pawn_move{-1};
       // regola delle 50 mosse
-      short _50_move_count;
+      short _50_move_count{0};
       Side _50_move_start;
 
    private:
@@ -72,9 +72,9 @@ namespace Chess
       Board(const std::vector<Piece> &pieces);
 
       // Eccezione per indicare una mossa invalida o illegale
-      class IllegalMoveException;
+      class IllegalMoveException{};
       // Eccezione che viene lanciata quando non si è trovato un pezzo
-      class PieceNotFoundException;
+      class PieceNotFoundException{};
 
       // Getter per i pezzi di nero e bianco, in base al side passato
       // Copia i pezzi nel vector passato come output

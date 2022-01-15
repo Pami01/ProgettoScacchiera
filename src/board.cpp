@@ -7,13 +7,6 @@
 
 namespace Chess
 {
-   /*       ECCEZIONI       */
-   class Board::IllegalMoveException
-   {
-   };
-   class Board::PieceNotFoundException
-   {
-   };
    /*       COSTRUTTORI       */
    Board::Board()
        : _pieces(std::vector<Piece>())
@@ -37,11 +30,10 @@ namespace Chess
       _pieces.push_back(Piece{"G1", WHITE, KNIGHT});
       _pieces.push_back(Piece{"H1", WHITE, ROOK});
       // Pedoni
-      for (int i = 0; i < 8; i++)
+      for (short i = 0; i < 8; i++)
       {
-         std::string c = std::to_string('A' + i);
-         _pieces.push_back(Piece{c + '2', WHITE, PAWN});
-         _pieces.push_back(Piece{c + '7', BLACK, PAWN});
+         _pieces.push_back(Piece{{i, 1}, WHITE, PAWN});
+         _pieces.push_back(Piece{{i, 6}, BLACK, PAWN});
       }
       // Pezzi del nero
       _pieces.push_back(Piece{"A8", BLACK, ROOK});
@@ -148,8 +140,15 @@ namespace Chess
 
    void Board::kill_piece(const Position &position)
    {
-      _pieces.erase(std::find_if(_pieces.begin(), _pieces.end(), [&position](const Piece &p)
-                              { return p.position() == position; }));
+      try
+      {
+         find_piece(position);
+         _pieces.erase(std::find_if(_pieces.begin(), _pieces.end(), [&position](const Piece &p)
+                                    { return p.position() == position; }));
+      }
+      catch (PieceNotFoundException e)
+      {
+      }
    }
 
    // TODO Testare la correttezza
@@ -182,7 +181,7 @@ namespace Chess
          if (p_from.type() == PAWN && from.x == to.x)
             return false;
          // Se è il re e sta cercando di arroccare non può se c'è un pezzo nella posizione finale
-         if (p_from.type() == KING && abs(from.y - to.y) == 2)
+         if (p_from.type() == KING && abs(from.x - to.x) == 2)
             return false;
       }
       catch (PieceNotFoundException e)
@@ -190,6 +189,9 @@ namespace Chess
          // Si arriva qua se ci si sta muovendo in una casa vuota
          // Non si fa niente perché significa che il pezzo si potrebbe muovere in questa posizione
       }
+
+      if (is_obstructed(p_from, to, _pieces))
+         return false;
 
       // Simulo il movimento del pezzo e controllo se è una mossa legale (cioè se mette in scacco il mio stesso re)
       std::vector<Piece> simulated_pieces;
@@ -224,7 +226,7 @@ namespace Chess
                // La casa davanti al pedone è libera. OK
             }
          }
-         else if (from.y != to.y) // Sto mangiando in obliquo
+         else if (from.x != to.x) // Sto mangiando in obliquo
          {
             try
             {
@@ -234,7 +236,7 @@ namespace Chess
             catch (PieceNotFoundException e)
             {
                // Per muoversi in diagonale il pedone deve mangiare (se non è un caso di en passant non è valido)
-               if (!(_last_pawn_move == to.y && from.x == (p_from.side() == WHITE ? 4 : 3)))
+               if (!(_last_pawn_move == to.x && from.y == (p_from.side() == WHITE ? 4 : 3)))
                   return false;
             }
          }
@@ -242,9 +244,9 @@ namespace Chess
       }
       else if (p_from.type() == KING) /* Arrocco re */
       {
-         if (abs(from.y - to.y) == 2)
+         if (abs(from.x - to.x) == 2)
          {
-            short castle_direction = from.y < to.y ? 1 : -1;
+            short castle_direction = from.x < to.x ? 1 : -1;
             // Controllo che il re non abbia ancora perso il diritto ad arroccare
             if (p_from.side() == WHITE)
             {
@@ -266,7 +268,7 @@ namespace Chess
             // Controllo se nella posizione intermedia (tra quella di arrocco e quella attuale) c'è un pezzo (quella finale è già controllata)
             try
             {
-               find_piece({from.x, (short)(from.y + castle_direction)});
+               find_piece({(short)(from.x + castle_direction), from.y});
                // Se c'è un pezzo, questo blocca l'arrocco
                return false;
             }
@@ -282,7 +284,7 @@ namespace Chess
                if (p.position() != from)
                   simulated_pieces.push_back(p);
             }
-            simulated_pieces.push_back(Piece{{from.x, (short)(from.y + castle_direction)}, p_from.side(), p_from.type()});
+            simulated_pieces.push_back(Piece{{(short)(from.x + castle_direction), from.y}, p_from.side(), p_from.type()});
 
             if (is_check(p_from.side(), simulated_pieces))
                return false;
@@ -388,7 +390,10 @@ namespace Chess
          {
             // Se il pezzo ha mosse legali la partita non è finita
             if (can_move(p, pos))
+            {
+               can_move(p, pos);
                return NONE;
+            }
          }
       }
 
@@ -415,8 +420,8 @@ namespace Chess
          {
             try
             {
-               Piece p = b.find_piece({(short)(7 - i), j});
-               os << (p.side() == WHITE ? (char)p.side() : (char)(p.side() + 32));
+               Piece p = b.find_piece({j, (short)(7 - i)});
+               os << (p.side() == BLACK ? (char)p.type() : (char)(p.type() + 32));
             }
             catch (Board::PieceNotFoundException e)
             {
@@ -476,27 +481,27 @@ namespace Chess
       if (p_from.type() == PAWN)
       {
          // Sto mangiando en passant
-         if (_last_pawn_move == to.y && from.x == (p_from.side() == WHITE ? 4 : 3))
+         if (_last_pawn_move == to.x && from.y == (p_from.side() == WHITE ? 4 : 3))
          {
             // Elimino il pezzo mangiato
-            kill_piece(Position{from.x, to.y});
+            kill_piece(Position{to.x, from.y});
          }
 
          // Il pedone è avanzato di 2
-         if (abs(from.x - to.x) == 2)
-            _last_pawn_move = to.y;
+         if (abs(from.y - to.y) == 2)
+            _last_pawn_move = to.x;
          else
             _last_pawn_move = -1; // valore invalido, non ho appena avanzato un pedone di 2
 
          // Promozione
-         if (to.x == (p_from.side() == WHITE ? 7 : 0))
+         if (to.y == (p_from.side() == WHITE ? 7 : 0))
          {
             if (promotion_type == PieceType::UNSELECTED)
             {
                char c;
                std::cout << "Inserisci il carattere del pezzo a cui vuoi promuovere: ";
                std::cin >> c;
-               promotion_type = PieceType(c);
+               promotion_type = PieceType(std::toupper(c));
             }
             if (!is_valid_piece_type(promotion_type))
                throw IllegalMoveException();
@@ -524,29 +529,29 @@ namespace Chess
          }
 
          // Se il re sta arroccando muovo la rispettiva torre (il re è già stato spostato)
-         if (abs(from.y - to.y) == 2)
+         if (abs(from.x - to.x) == 2)
          {
-            short castle_direction = from.y < to.y ? 1 : -1;
+            short castle_direction = from.x < to.x ? 1 : -1;
             // Elimino la torre
-            kill_piece(Position{from.x, (short)(castle_direction == 1 ? 7 : 0)});
+            kill_piece(Position{(short)(castle_direction == 1 ? 7 : 0), from.y});
             // Rimpiazzo la torre a fianco al re
-            _pieces.push_back(Piece{{from.x, (short)(from.y + castle_direction)}, p_from.side(), ROOK});
+            _pieces.push_back(Piece{{(short)(from.x + castle_direction), from.y}, p_from.side(), ROOK});
          }
       }
       else if (p_from.type() == ROOK) /* Tolgo la possibilità di arroccare al re se sto muovendo una torre */
       {
          if (p_from.side() == WHITE)
          {
-            if (from.y == 7)
+            if (from.x == 7)
                _can_white_castle_right = false;
-            else if (from.y == 0)
+            else if (from.x == 0)
                _can_white_castle_left = false;
          }
          else
          {
-            if (from.y == 7)
+            if (from.x == 7)
                _can_black_castle_right = false;
-            else if (from.y == 0)
+            else if (from.x == 0)
                _can_black_castle_left = false;
          }
       }
