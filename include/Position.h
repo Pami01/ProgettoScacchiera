@@ -28,7 +28,9 @@ namespace Chess
       Position(const char *arithmetic_notation);
 
       // Eccezione che indica che la posizione non è valida
-      class InvalidPositionException{};
+      class InvalidPositionException
+      {
+      };
 
       // Ritorna una nuova posizione data dall'incremento di quella corrente
       //    con le coordinate passate per parametro
@@ -40,6 +42,8 @@ namespace Chess
       // Operatore di disuguaglianza
       bool operator!=(const Position &other) const;
    };
+
+   std::ostream &operator<<(std::ostream &os, const Position &pos);
 }
 
 #endif

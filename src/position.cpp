@@ -1,6 +1,7 @@
 #ifndef POSITION_CPP
 #define POSITION_CPP
 
+#include <ostream>
 #include "Position.h"
 
 namespace Chess
@@ -60,6 +61,10 @@ namespace Chess
    bool Position::operator!=(const Position &other) const
    {
       return !(*this == other);
+   }
+
+   std::ostream& operator<<(std::ostream &os, const Position &pos) {
+      return os << ((char) ('A' + pos.x)) << (pos.y + 1);
    }
 }
 
