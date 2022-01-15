@@ -2,7 +2,6 @@
 #define PIECE_CPP
 
 #include "Piece.h"
-#include "Position.h"
 namespace Chess
 {
    Piece::Piece(const Position position, const Side side, const PieceType type) : _position(position), _side(side), _type(type)

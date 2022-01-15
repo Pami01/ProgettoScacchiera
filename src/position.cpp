@@ -5,9 +5,6 @@
 
 namespace Chess
 {
-   class Position::InvalidPositionException
-   {
-   };
 
    bool Position::is_valid(void) const
    {
@@ -41,7 +38,7 @@ namespace Chess
    }
 
    Position::Position(const char *arithmetic_notation)
-      : Position(std::string(arithmetic_notation))
+       : Position(std::string(arithmetic_notation))
    {
    }
 
