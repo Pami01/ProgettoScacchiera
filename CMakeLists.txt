@@ -10,5 +10,7 @@ add_library(board include/board.h src/board.cpp)
 
 
 add_executable(scacchiera executables/scacchiera.cpp src/position.cpp src/piece.cpp src/board.cpp )
+add_executable(replay executables/replay.cpp src/position.cpp src/piece.cpp src/board.cpp )
 
 target_link_libraries(scacchiera position piece board)
+target_link_libraries(replay position piece board)

@@ -148,7 +148,7 @@ namespace Chess
 
    void Board::kill_piece(const Position &position)
    {
-      _pieces.erase(std::find(_pieces.begin(), _pieces.end(), [&position](const Piece &p)
+      _pieces.erase(std::find_if(_pieces.begin(), _pieces.end(), [&position](const Piece &p)
                               { return p.position() == position; }));
    }
 
@@ -310,6 +310,7 @@ namespace Chess
          case QUEEN:
             return false;
          case BISHOP:
+         {
             short bishop_color = (p.position().x + p.position().y) % 2;
             if (p.side() == WHITE)
             {
@@ -338,6 +339,7 @@ namespace Chess
                   return false;
             }
             break;
+         }
          case KNIGHT:
             if (p.side() == WHITE)
             {

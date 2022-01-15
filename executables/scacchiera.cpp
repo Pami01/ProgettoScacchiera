@@ -3,6 +3,7 @@
 
 int main()
 {
+   std::cout << "prova";
 
-    return 0;
+   return 0;
 }
