@@ -2,6 +2,7 @@
 #define BOARD_CPP
 
 #include <algorithm>
+#include <iostream>
 #include "Board.h"
 
 namespace Chess
@@ -11,9 +12,6 @@ namespace Chess
    {
    };
    class Board::PieceNotFoundException
-   {
-   };
-   class Board::WrongTurnException
    {
    };
    /*       COSTRUTTORI       */
@@ -154,6 +152,144 @@ namespace Chess
                               { return p.position() == position; }));
    }
 
+   bool Board::can_move(const Piece &p_from, const Position &to) const
+   {
+      const Position &from = p_from.position();
+      // Controlla se è il turno del pezzo selezionato
+      if (p_from.side() != _turn)
+         return false;
+      // Controlla se la posizione finale è tra quelle in cui si può muovere il pezzo selezionato
+      std::vector<Position> moves;
+      p_from.get_moves(moves);
+
+      auto it =
+          std::find_if(moves.begin(),
+                       moves.end(),
+                       [&to](const Position pos)
+                       {
+                          return pos == to;
+                       });
+      if (it == moves.end())
+         return false;
+      // Controlla se la casa di arrivo contiene un pezzo dello stesso schieramento di quello selezionato
+      try
+      {
+         Piece p_to = find_piece(to);
+         if (p_to.side() == p_from.side())
+            return false;
+         // Se è un pedone e si sta muovendo in avanti non può muoversi se c'è un pezzo in to
+         if (p_from.type() == PAWN && from.x == to.x)
+            return false;
+         // Se è il re e sta cercando di arroccare non può se c'è un pezzo nella posizione finale
+         if (p_from.type() == KING && abs(from.y - to.y) == 2)
+            return false;
+      }
+      catch (PieceNotFoundException e)
+      {
+         // Si arriva qua se ci si sta muovendo in una casa vuota
+         // Non si fa niente perché significa che il pezzo si potrebbe muovere in questa posizione
+      }
+
+      // Simulo il movimento del pezzo e controllo se è una mossa legale (cioè se mette in scacco il mio stesso re)
+      std::vector<Piece> simulated_pieces;
+      simulated_pieces.reserve(_pieces.size());
+      for (const Piece &p : _pieces)
+      {
+         if (p.position() != from && p.position() != to)
+            simulated_pieces.push_back(p);
+      }
+      simulated_pieces.push_back(Piece{to, p_from.side(), p_from.type()});
+
+      if (is_check(p_from.side(), simulated_pieces))
+         return false;
+
+      // Movimento pedone
+      if (p_from.type() == PAWN)
+      {
+         if (abs(from.y - to.y) == 2) // Sto cercando di avanzare un pedone di 2
+         {
+            // Non puoi muovere il pedone di 2 se non è nella posizione iniziale
+            if ((p_from.side() == WHITE && from.y != 1) || (p_from.side() == BLACK && from.y != 6))
+               return false;
+            // Controllo che la casa subito davanti al pedone sia libera (la casa di arrivo è già stata controllata)
+            try
+            {
+               find_piece(from.move(0, p_from.side() == WHITE ? 1 : -1));
+               // Ho trovato un pezzo davanti al pedone quindi non si può muovere
+               return false;
+            }
+            catch (PieceNotFoundException e)
+            {
+               // La casa davanti al pedone è libera. OK
+            }
+         }
+         else if (from.y != to.y) // Sto mangiando in obliquo
+         {
+            try
+            {
+               find_piece(to);
+               // Il caso in cui il pezzo di arrivo è dello stesso schieramento è già stato gestito
+            }
+            catch (PieceNotFoundException e)
+            {
+               // Per muoversi in diagonale il pedone deve mangiare (se non è un caso di en passant non è valido)
+               if (!(_last_pawn_move == to.y && from.x == (p_from.side() == WHITE ? 4 : 3)))
+                  return false;
+            }
+         }
+         // La spinta di 1 del pedone è già gestita
+      }
+      else if (p_from.type() == KING) /* Arrocco re */
+      {
+         if (abs(from.y - to.y) == 2)
+         {
+            short castle_direction = from.y < to.y ? 1 : -1;
+            // Controllo che il re non abbia ancora perso il diritto ad arroccare
+            if (p_from.side() == WHITE)
+            {
+               if (castle_direction > 0 && !_can_white_castle_right)
+                  return false;
+               if (castle_direction < 0 && !_can_white_castle_left)
+                  return false;
+            }
+            else
+            {
+               if (castle_direction > 0 && !_can_black_castle_right)
+                  return false;
+               if (castle_direction < 0 && !_can_black_castle_left)
+                  return false;
+            }
+            // Se al momento il re è sotto scacco non può arroccare
+            if (is_check(p_from.side(), _pieces))
+               return false;
+            // Controllo se nella posizione intermedia (tra quella di arrocco e quella attuale) c'è un pezzo (quella finale è già controllata)
+            try
+            {
+               find_piece({from.x, (short)(from.y + castle_direction)});
+               // Se c'è un pezzo, questo blocca l'arrocco
+               return false;
+            }
+            catch (PieceNotFoundException e)
+            {
+               // OK, niente ferma l'arrocco
+            }
+            // Controllo se la posizione intermedia (tra quella di arrocco e quella attuale) mette sotto scacco il re
+            std::vector<Piece> simulated_pieces;
+            simulated_pieces.reserve(_pieces.size());
+            for (const Piece &p : _pieces)
+            {
+               if (p.position() != from)
+                  simulated_pieces.push_back(p);
+            }
+            simulated_pieces.push_back(Piece{{from.x, (short)(from.y + castle_direction)}, p_from.side(), p_from.type()});
+
+            if (is_check(p_from.side(), simulated_pieces))
+               return false;
+         }
+      }
+      return true;
+   }
+
    /*       OVERLOAD OPERATORI       */
    // TODO Testare la correttezza
    std::ostream &operator<<(std::ostream &os, const Board &b)
@@ -183,160 +319,77 @@ namespace Chess
    }
    /*       FUNZIONALITA' DI GIOCO       */
 
-   void Board::move(const Position from, const Position to)
+   void Board::move(const Position from, const Position to, PieceType promotion_type)
    {
-      // Lancia una 'PieceNotFoundException' se il pezzo non viene trovato
+      // Lancia una PieceNotFoundException se non viene trovato un pezzo alla posizione from
       const Piece p_from = find_piece(from);
-      // Controlla se è il turno del pezzo selezionato
-      if (p_from.side() != _turn)
-         throw WrongTurnException();
-      // Controlla se la posizione finale è tra quelle in cui si può muovere il pezzo selezionato
-      std::vector<Position> moves;
-      p_from.get_moves(moves);
-
-      auto it =
-          std::find_if(moves.begin(),
-                       moves.end(),
-                       [&to](const Position pos)
-                       {
-                          return pos == to;
-                       });
-      if (it == moves.end())
-         throw IllegalMoveException();
-      // Controlla se la casa di arrivo contiene un pezzo dello stesso schieramento di quello selezionato
-      try
-      {
-         Piece p_to = find_piece(to);
-         if (p_to.side() == p_from.side())
-            throw IllegalMoveException();
-         // Se è un pedone e si sta muovendo in avanti non può muoversi se c'è un pezzo in to
-         if (p_from.type() == PAWN && from.x == to.x)
-            throw IllegalMoveException();
-         // Se è il re e sta cercando di arroccare non può se c'è un pezzo nella posizione finale
-         if (p_from.type() == KING && abs(from.y - to.y) == 2)
-            throw IllegalMoveException();
-      }
-      catch (PieceNotFoundException e)
-      {
-         // Si arriva qua se ci si sta muovendo in una casa vuota
-         // Non si fa niente perché significa che il pezzo si potrebbe muovere in questa posizione
-      }
-
-      // Simulo il movimento del pezzo e controllo se è una mossa legale (cioè se mette in scacco il mio stesso re)
-      std::vector<Piece> simulated_pieces;
-      simulated_pieces.reserve(_pieces.size());
-      for (const Piece &p : _pieces)
-      {
-         if (p.position() != from && p.position() != to)
-            simulated_pieces.push_back(p);
-      }
-      simulated_pieces.push_back(Piece{to, p_from.side(), p_from.type()});
-
-      if (is_check(p_from.side(), simulated_pieces))
+      if (!can_move(p_from, to))
          throw IllegalMoveException();
 
-      // Movimento pedone
+      // Elimino il pezzo nella posizione iniziale e in quella finale
+      kill_piece(from);
+      kill_piece(to);
+      // Reinserisco il pezzo nella sua nuova posizione
+      _pieces.push_back(Piece{to, p_from.side(), p_from.type()});
+      // Cambio turno
+      toggle_turn();
+
+      /* CASI SPECIALI */
+      // En passant, elimino il pezzo mangiato e valorizzo la variabile _last_pawn_move
       if (p_from.type() == PAWN)
       {
-         if (abs(from.y - to.y) == 2) // Sto cercando di avanzare un pedone di 2
+         // Sto mangiando en passant
+         if (_last_pawn_move == to.y && from.x == (p_from.side() == WHITE ? 4 : 3))
          {
-            // Non puoi muovere il pedone di 2 se non è nella posizione iniziale
-            if ((p_from.side() == WHITE && from.y != 1) || (p_from.side() == BLACK && from.y != 6))
-               throw IllegalMoveException();
-            // Controllo che la casa subito davanti al pedone sia libera (la casa di arrivo è già stata controllata)
-            try
-            {
-               find_piece(from.move(0, p_from.side() == WHITE ? 1 : -1));
-               // Ho trovato un pezzo davanti al pedone quindi non si può muovere
-               throw IllegalMoveException();
-            }
-            catch (PieceNotFoundException e)
-            {
-               // La casa davanti al pedone è libera. OK
-            }
-         }
-         else if (from.x != to.x) // Sto mangiando in obliquo
-         {
-            try
-            {
-               find_piece(to);
-               // Il caso in cui il pezzo di arrivo è dello stesso schieramento è già stato gestito
-            }
-            catch (PieceNotFoundException e)
-            {
-               // Per muoversi in diagonale il pedone deve mangiare
-               if (!(_last_pawn_move == to.y && from.x == (p_from.side() == WHITE ? 4 : 3)))
-                  throw IllegalMoveException();
-            }
-            // TODO Nella simulazione non è gestito lo scacco dopo aver mangiato per en passant
-            // Mangio il pezzo in en passant
+            // Elimino il pezzo mangiato
             kill_piece(Position{from.x, to.y});
          }
-         // La spinta di 1 del pedone è già gestita
-      }
-      else if (p_from.type() == KING) /* Arrocco re */
-      {
-         if (abs(from.y - to.y) == 2)
-         {
-            short castle_direction = from.y < to.y ? 1 : -1;
-            // Controllo che il re non abbia ancora perso il diritto ad arroccare
-            if (p_from.side() == WHITE)
-            {
-               if (castle_direction > 0 && !_can_white_castle_right)
-                  throw IllegalMoveException();
-               if (castle_direction < 0 && !_can_white_castle_left)
-                  throw IllegalMoveException();
-            }
-            else
-            {
-               if (castle_direction > 0 && !_can_black_castle_right)
-                  throw IllegalMoveException();
-               if (castle_direction < 0 && !_can_black_castle_left)
-                  throw IllegalMoveException();
-            }
-            // Se al momento il re è sotto scacco non può arroccare
-            if (is_check(p_from.side(), _pieces))
-               throw IllegalMoveException();
-            // Controllo se nella posizione intermedia (tra quella di arrocco e quella attuale) c'è un pezzo (quella finale è già controllata)
-            try
-            {
-               find_piece({from.x, from.y + castle_direction});
-               // Se c'è un pezzo, questo blocca l'arrocco
-               throw IllegalMoveException();
-            }
-            catch (PieceNotFoundException e)
-            {
-               // OK, niente ferma l'arrocco
-            }
-            // Controllo se la posizione intermedia (tra quella di arrocco e quella attuale) mette sotto scacco il re
-            std::vector<Piece> simulated_pieces;
-            simulated_pieces.reserve(_pieces.size());
-            for (const Piece &p : _pieces)
-            {
-               if (p.position() != from)
-                  simulated_pieces.push_back(p);
-            }
-            simulated_pieces.push_back(Piece{{from.x, from.y + castle_direction}, p_from.side(), p_from.type()});
 
-            if (is_check(p_from.side(), simulated_pieces))
-               throw IllegalMoveException();
+         // Il pedone è avanzato di 2
+         if (abs(from.x - to.x) == 2)
+            _last_pawn_move = to.y;
+         else
+            _last_pawn_move = -1; // valore invalido, non ho appena avanzato un pedone di 2
 
-            // Elimino la torre con cui il re arrocca
-            kill_piece(Position{from.x, castle_direction > 0 ? 7 : 0});
-            // Rimetto la torre al posto giusto
-            _pieces.push_back(Piece{Position{from.x, from.y + castle_direction}, p_from.side(), ROOK});
+         if (to.x == (p_from.side() == WHITE ? 7 : 0)) {
+            if (promotion_type == PieceType::UNSELECTED) {
+               char c;
+               std::cout << "Inserisci il carattere del pezzo a cui vuoi promuovere: ";
+               std::cin >> c;
+               promotion_type = PieceType(c);
+            }
+            if (!is_valid_piece_type(promotion_type))
+               throw IllegalMoveException();
+            // Elimino il pedone appena mosso
+            kill_piece(to);
+            // Sostituisco il pedone con la sua promozione
+            _pieces.push_back(Piece{to, p_from.side(), promotion_type});
          }
-
-         // Tolgo al re la possibilità di arroccare in futuro visto che si sta muovendo adesso
+      }
+      else
+         _last_pawn_move = -1; // valore invalido
+      // Arrocco
+      if (p_from.type() == KING)
+      {
+         // Rimuovo l'arrocco al re che si è appena mosso
          if (p_from.side() == WHITE)
          {
-            _can_white_castle_left = false;
             _can_white_castle_right = false;
+            _can_white_castle_left = false;
          }
          else
          {
-            _can_black_castle_left = false;
             _can_black_castle_right = false;
+            _can_black_castle_left = false;
+         }
+
+         // Se il re sta arroccando muovo la rispettiva torre (il re è già stato spostato)
+         if (abs(from.y - to.y) == 2) {
+            short castle_direction = from.y < to.y ? 1 : -1;
+            // Elimino la torre
+            kill_piece(Position{from.x, (short) (castle_direction == 1 ? 7 : 0)});
+            // Rimpiazzo la torre a fianco al re
+            _pieces.push_back(Piece{{from.x, (short) (from.y + castle_direction)}, p_from.side(), ROOK});
          }
       }
       else if (p_from.type() == ROOK) /* Tolgo la possibilità di arroccare al re se sto muovendo una torre */
@@ -356,14 +409,6 @@ namespace Chess
                _can_black_castle_left = false;
          }
       }
-
-      // TODO Promozione
-
-      // Elimino il pezzo nella posizione iniziale e in quella finale
-      kill_piece(from);
-      kill_piece(to);
-      // Reinserisco il pezzo nella sua nuova posizione
-      _pieces.push_back(Piece{to, p_from.side(), p_from.type()});
    }
 }
 

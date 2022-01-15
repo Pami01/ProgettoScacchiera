@@ -15,6 +15,7 @@ namespace Chess
    // Enum che rappresenta il pezzo stesso
    enum PieceType
    {
+      UNSELECTED = 0,
       PAWN = 'P',
       KNIGHT = 'C',
       BISHOP = 'A',
@@ -22,6 +23,7 @@ namespace Chess
       QUEEN = 'D',
       KING = 'R'
    };
+   bool is_valid_piece_type(const PieceType& type);
    // Classe Piece che rappresenta un pezzo in tutte le sue caratteristiche
    class Piece
    {

@@ -54,6 +54,8 @@ namespace Chess
       bool is_obstructed(const Piece &p, const Position &to, const std::vector<Piece> &pieces) const;
       // Metodo che elimina il pezzo alla posizione indicata dal vettore _pieces
       void kill_piece(const Position &position);
+      // Ritorna true il pezzo alla posizione from si può muovere nella posizione to, false altrimenti
+      bool can_move(const Piece &p_from, const Position &to) const;
 
    public:
       // Costruttore che inizializza una partita
@@ -65,8 +67,6 @@ namespace Chess
       class IllegalMoveException;
       // Eccezione che viene lanciata quando non si è trovato un pezzo
       class PieceNotFoundException;
-      // Eccezione che viene lanciata se si tenta di muovere un pezzo nel turno che non è il suo
-      class WrongTurnException;
 
       // Getter per i pezzi di nero e bianco, in base al side passato
       // Copia i pezzi nel vector passato come output
@@ -74,7 +74,7 @@ namespace Chess
 
       // Sposta un pezzo dalla posizione 'from' alla posizione 'to'
       // Lancia una eccezione, se per qualche motivo la mossa non è valida
-      void move(const Position from, const Position to);
+      void move(const Position from, const Position to, const PieceType promotion_type = PieceType::UNSELECTED);
 
       // Ritorna 'Ending::NONE = 0' se la partita non è finita, altrimenti ritorna il modo in cui è finita la partita
       Ending is_game_over(void) const;
