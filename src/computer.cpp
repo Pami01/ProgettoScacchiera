@@ -50,8 +50,7 @@ namespace Chess
 
    PieceType Computer::get_random_promotion() const
    {
-      int r = rand() % 4;
-      switch (r)
+      switch (rand() % 4)
       {
       case 0:
          return QUEEN;
