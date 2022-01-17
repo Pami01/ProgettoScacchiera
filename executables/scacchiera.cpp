@@ -1,4 +1,5 @@
 // @author: Pietro Bovolenta
+//TODO Verificare passaggio promozione a file
 #include <iostream>
 #include <fstream>
 #include <time.h>
@@ -8,7 +9,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #define clear std::system("cls")
-#define wait sleep(0.1)
+#define wait Sleep(0.1)
 #endif
 
 #ifdef linux
