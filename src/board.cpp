@@ -9,16 +9,15 @@
 namespace Chess
 {
    /*       COSTRUTTORI       */
+
    Board::Board()
        : _pieces(std::vector<Piece>())
    {
       _pieces.reserve(32);
       initialize();
    }
-   Board::Board(const std::vector<Piece> &v)
-       : _pieces(v) {}
    /*       METODI PRIVATI       */
-   // TODO Testare la correttezza
+
    void Board::initialize(void)
    {
       // Pezzi del bianco
@@ -46,23 +45,10 @@ namespace Chess
       _pieces.push_back(Piece{"G8", BLACK, KNIGHT});
       _pieces.push_back(Piece{"H8", BLACK, ROOK});
    }
-   // TODO Testare la correttezza
+
    void Board::toggle_turn(void)
    {
       _turn = !_turn;
-   }
-   // TODO Testare la correttezza
-   Piece Board::find_piece(const Position &position) const
-   {
-      auto it = std::find_if(_pieces.begin(),
-                             _pieces.end(),
-                             [&position](const Piece &p)
-                             {
-                                return p.position() == position;
-                             });
-      if (it != _pieces.end())
-         return *it;
-      throw PieceNotFoundException();
    }
 
    bool Board::is_valid_promotion_type(const PieceType &type)
@@ -117,7 +103,6 @@ namespace Chess
       return false;
    }
 
-   // TODO Testare la correttezza
    bool Board::is_obstructed(const Piece &p, const Position &to, const std::vector<Piece> &pieces) const
    {
       // Il cavallo non può avere il percorso ostruito
@@ -157,7 +142,6 @@ namespace Chess
       }
    }
 
-   // TODO Testare la correttezza
    bool Board::can_move(const Piece &p_from, const Position &to) const
    {
       const Position &from = p_from.position();
@@ -306,7 +290,6 @@ namespace Chess
       return _turn;
    }
 
-   // TODO Testare la correttezza
    void Board::get_pieces(Side side, std::vector<Piece> &output) const
    {
       // Inizializza vector output con size esatta di pezzi appertenente al side corrispondente
@@ -435,7 +418,7 @@ namespace Chess
    }
 
    /*       OVERLOAD OPERATORI       */
-   // TODO Testare la correttezza
+
    std::ostream &operator<<(std::ostream &os, const Board &b)
    {
       for (short i = 0; i < 8; i++)
@@ -463,7 +446,19 @@ namespace Chess
    }
    /*       FUNZIONALITA' DI GIOCO       */
 
-   // TODO Testare la correttezza
+   Piece Board::find_piece(const Position &position) const
+   {
+      auto it = std::find_if(_pieces.begin(),
+                             _pieces.end(),
+                             [&position](const Piece &p)
+                             {
+                                return p.position() == position;
+                             });
+      if (it != _pieces.end())
+         return *it;
+      throw PieceNotFoundException();
+   }
+
    void Board::move(const Position from, const Position to, PieceType promotion_type)
    {
       // Lancia una PieceNotFoundException se non viene trovato un pezzo alla posizione from

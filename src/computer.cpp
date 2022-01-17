@@ -8,12 +8,12 @@
 
 namespace Chess
 {
-   Computer::Computer(Board &board, const Side side)
+   Computer::Computer(Board &board, const Side &side)
        : _board(board), _side(side)
    {
    }
 
-   std::string Computer::move(void) const
+   void Computer::move(std::ostream &os) const
    {
       std::vector<Piece> pieces;
       // Prendo pezzi dello schieramento attuale del bot
@@ -31,22 +31,27 @@ namespace Chess
             int position = rand() % moves.size();
             try
             {
+               bool promotion = pieces[piece].type() == PAWN && moves[position].y == (pieces[piece].side() == WHITE ? 7 : 0);
                // Tento lo spostamento. Se la mossa non è legale ricomincio il ciclo ed estraggo un altro pezzo
                // Passo ad ogni mossa una eventuale promozione
-               _board.move(pieces[piece].position(), moves[position], get_random_promotion());
-               return pieces[piece].position().to_string() + " " + moves[position].to_string();
+               PieceType promot_type = get_random_promotion();
+               _board.move(pieces[piece].position(), moves[position], promot_type);
+               os << pieces[piece].position().to_string() + " " + moves[position].to_string();
+               if (promotion)
+                  os << ' ' << ((char) (promot_type));
+               os << std::endl;
             }
             catch (Board::IllegalMoveException e)
             {
             }
          }
       }
-      throw std::exception();
    }
 
    PieceType Computer::get_random_promotion() const
    {
-      switch (rand() % 4)
+      int r = rand() % 4;
+      switch (r)
       {
       case 0:
          return QUEEN;

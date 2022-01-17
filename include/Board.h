@@ -48,9 +48,6 @@ namespace Chess
       void initialize(void);
       // Cambia il turno
       void toggle_turn(void);
-      // Cerca il pezzo ad una certa posizione e lo ritorna
-      // Lancia una PieceNotFoundException se alla posizione inserita non c'è alcun pezzo
-      Piece find_piece(const Position &position) const;
       // Ritorna true se la posizione corrente ha generato uno scacco al re dello schieramento side
       bool is_check(const Side &side, const std::vector<Piece> &pieces) const;
       // Ritorna true se il pezzo di partenza è ostruito da un altro pezzo cercando di arrivare alla posizione to
@@ -60,8 +57,7 @@ namespace Chess
       // Ritorna true il pezzo alla posizione from si può muovere nella posizione to, false altrimenti
       bool can_move(const Piece &p_from, const Position &to) const;
       // Controlla se il pezzo può essere una promozione valida
-      bool is_valid_promotion_type(const PieceType& type);
-
+      bool is_valid_promotion_type(const PieceType &type);
 
       /* CONTROLLO FINALI */
       // Controlla se la posizione per il lato side è scacco matto o stallo o se è una posizione giocabile
@@ -72,13 +68,19 @@ namespace Chess
    public:
       // Costruttore che inizializza una partita
       Board();
-      // Costruttore che inizializza una partita da una specifica posizione
-      Board(const std::vector<Piece> &pieces);
 
       // Eccezione per indicare una mossa invalida o illegale
-      class IllegalMoveException{};
+      class IllegalMoveException
+      {
+      };
       // Eccezione che viene lanciata quando non si è trovato un pezzo
-      class PieceNotFoundException{};
+      class PieceNotFoundException
+      {
+      };
+
+      // Cerca il pezzo ad una certa posizione e lo ritorna
+      // Lancia una PieceNotFoundException se alla posizione inserita non c'è alcun pezzo
+      Piece find_piece(const Position &position) const;
 
       // Getter per il turno attuale
       Side turn(void) const;

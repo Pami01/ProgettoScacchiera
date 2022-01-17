@@ -1,5 +1,5 @@
 // @author: Pietro Bovolenta
-//TODO Verificare passaggio promozione a file
+// TODO Verificare passaggio promozione a file
 #include <iostream>
 #include <fstream>
 #include <time.h>
@@ -79,10 +79,18 @@ Chess::Ending player_computer(Chess::Board &board, std::ostream &os)
 
          try
          {
+            bool promotion = false;
             const Chess::Position from = move.substr(0, 2);
             const Chess::Position to = move.substr(3, 2);
+            if (board.find_piece(from).type() == Chess::PAWN && to.y == (player_side == Chess::WHITE ? 7 : 0))
+            {
+               promotion = true;
+            }
             board.move(from, to);
-            os << from << ' ' << to << std::endl;
+            os << from << ' ' << to;
+            if (promotion)
+               os << ' ' << (char)(board.find_piece(to).type());
+            os << std::endl;
          }
          catch (Chess::Board::IllegalMoveException e)
          {
@@ -99,7 +107,7 @@ Chess::Ending player_computer(Chess::Board &board, std::ostream &os)
       }
       else
       {
-         computer.move();
+         computer.move(os);
       }
 
       clear;
@@ -114,8 +122,6 @@ Chess::Ending computer_computer(Chess::Board &board, std::ostream &os)
    Chess::Computer computer1{board, Chess::WHITE};
    Chess::Computer computer2{board, Chess::BLACK};
 
-   std::string move;
-
    Chess::Ending game_over;
    int moves = 0;
    do
@@ -123,17 +129,16 @@ Chess::Ending computer_computer(Chess::Board &board, std::ostream &os)
       std::cout << board << std::endl;
 
       wait;
-      clear;
 
       if (board.turn() == Chess::WHITE)
-         move = computer1.move();
+         computer1.move(os);
       else
       {
-         move = computer2.move();
+         computer2.move(os);
          moves++;
       }
 
-      os << move << std::endl;
+      clear;
    } while (!(game_over = board.is_game_over()) && moves <= MAX_MOVES);
    return game_over;
 }

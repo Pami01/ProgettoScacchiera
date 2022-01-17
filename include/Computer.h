@@ -14,8 +14,8 @@ namespace Chess
       const Side _side;
 
    public:
-      Computer(Board &board, const Side side);
-      std::string move(void) const;
+      Computer(Board &board, const Side &side);
+      void move(std::ostream &os) const;
 
    private:
       PieceType get_random_promotion() const;
