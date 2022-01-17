@@ -1,3 +1,4 @@
+// @author: Pietro Bovolenta
 #ifndef BOARD_H
 #define BOARD_H
 
@@ -58,6 +59,9 @@ namespace Chess
       void kill_piece(const Position &position);
       // Ritorna true il pezzo alla posizione from si può muovere nella posizione to, false altrimenti
       bool can_move(const Piece &p_from, const Position &to) const;
+      // Controlla se il pezzo può essere una promozione valida
+      bool is_valid_promotion_type(const PieceType& type);
+
 
       /* CONTROLLO FINALI */
       // Controlla se la posizione per il lato side è scacco matto o stallo o se è una posizione giocabile
@@ -76,13 +80,16 @@ namespace Chess
       // Eccezione che viene lanciata quando non si è trovato un pezzo
       class PieceNotFoundException{};
 
+      // Getter per il turno attuale
+      Side turn(void) const;
+
       // Getter per i pezzi di nero e bianco, in base al side passato
       // Copia i pezzi nel vector passato come output
       void get_pieces(Side side, std::vector<Piece> &output) const;
 
       // Sposta un pezzo dalla posizione 'from' alla posizione 'to'
       // Lancia una eccezione, se per qualche motivo la mossa non è valida
-      void move(const Position from, const Position to, const PieceType promotion_type = PieceType::UNSELECTED);
+      void move(const Position from, const Position to, const PieceType promotion_type = PieceType::KING);
 
       // Ritorna 'Ending::NONE = 0' se la partita non è finita, altrimenti ritorna il modo in cui è finita la partita
       // Controlla solo il giocatore del side = _turn

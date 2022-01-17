@@ -1,3 +1,4 @@
+//@Author: Lorenzo Pamio
 #ifndef PIECE_CPP
 #define PIECE_CPP
 
@@ -34,7 +35,7 @@ namespace Chess
    //    senza considerare gli altri pezzi nella scacchiera
    void Piece::get_moves(std::vector<Position> &v) const
    {
-      //Spezzare logiche in colonne-righe-diagonali
+      // Spezzare logiche in colonne-righe-diagonali
       switch (_type)
       {
       case KING:
@@ -74,7 +75,7 @@ namespace Chess
                }
          }
       }
-      //Aggiunta posizione per arrocco
+      // Aggiunta posizione per arrocco
       try
       {
          v.push_back(_position.move(2, 0));
@@ -88,7 +89,7 @@ namespace Chess
    void Piece::get_bishop_moves(std::vector<Position> &v) const
    {
       bool ended = true;
-      //diagonale primo quadrante
+      // diagonale primo quadrante
       int i = 1, j = 1;
       while (ended)
       {
@@ -103,7 +104,7 @@ namespace Chess
             ended = false;
          }
       }
-      //diagonale 3° quadrante
+      // diagonale 3° quadrante
       i = -1;
       j = -1;
       ended = true;
@@ -120,7 +121,7 @@ namespace Chess
             ended = false;
          }
       }
-      //diagonale 4° quadrante
+      // diagonale 4° quadrante
       i = 1;
       j = -1;
       ended = true;
@@ -137,7 +138,7 @@ namespace Chess
             ended = false;
          }
       }
-      //diagonale 2° quadrante
+      // diagonale 2° quadrante
       i = -1;
       j = 1;
       ended = true;
@@ -160,9 +161,9 @@ namespace Chess
    void Piece::get_rook_moves(std::vector<Position> &v) const
    {
       bool ended = true;
-      //colonna verticale
+      // colonna verticale
       int move_x = 1, move_y = 0;
-      int x=0, y=0;
+      int x = 0, y = 0;
       while (ended)
       {
          try
@@ -170,12 +171,11 @@ namespace Chess
             x += move_x;
             y += move_y;
             v.push_back(_position.move(x, y));
-            
          }
          catch (Position::InvalidPositionException e)
          {
-            x=0;
-            y=0;
+            x = 0;
+            y = 0;
             if (move_x == 1 && move_y == 0)
             {
                move_x = 0;
@@ -296,22 +296,6 @@ namespace Chess
    Side operator!(const Side &side)
    {
       return side == WHITE ? BLACK : WHITE;
-   }
-
-   bool is_valid_piece_type(const PieceType &type)
-   {
-      switch (type)
-      {
-      case PAWN:
-      case KNIGHT:
-      case BISHOP:
-      case ROOK:
-      case QUEEN:
-      case KING:
-         return true;
-      default:
-         return false;
-      }
    }
 }
 

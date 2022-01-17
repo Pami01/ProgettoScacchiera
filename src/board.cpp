@@ -1,3 +1,4 @@
+// @author: Pietro Bovolenta
 #ifndef BOARD_CPP
 #define BOARD_CPP
 
@@ -63,16 +64,21 @@ namespace Chess
          return *it;
       throw PieceNotFoundException();
    }
-   /*       GETTERS       */
-   // TODO Testare la correttezza
-   void Board::get_pieces(Side side, std::vector<Piece> &output) const
+
+   bool Board::is_valid_promotion_type(const PieceType &type)
    {
-      // Inizializza vector output con size esatta di pezzi appertenente al side corrispondente
-      output = std::vector<Piece>{};
-      for (const Piece &p : _pieces)
+      switch (type)
       {
-         if (p.side() == side)
-            output.push_back(p);
+      case KING:
+      case PAWN:
+         return false;
+      case KNIGHT:
+      case BISHOP:
+      case ROOK:
+      case QUEEN:
+         return true;
+      default:
+         return false;
       }
    }
 
@@ -293,6 +299,25 @@ namespace Chess
       return true;
    }
 
+   /*       GETTERS       */
+
+   Side Board::turn(void) const
+   {
+      return _turn;
+   }
+
+   // TODO Testare la correttezza
+   void Board::get_pieces(Side side, std::vector<Piece> &output) const
+   {
+      // Inizializza vector output con size esatta di pezzi appertenente al side corrispondente
+      output = std::vector<Piece>{};
+      for (const Piece &p : _pieces)
+      {
+         if (p.side() == side)
+            output.push_back(p);
+      }
+   }
+
    /* CONTROLLO FINALI */
 
    bool Board::is_insufficient_material() const
@@ -496,14 +521,14 @@ namespace Chess
          // Promozione
          if (to.y == (p_from.side() == WHITE ? 7 : 0))
          {
-            if (promotion_type == PieceType::UNSELECTED)
+            if (promotion_type == PieceType::KING || promotion_type == PieceType::PAWN)
             {
                char c;
                std::cout << "Inserisci il carattere del pezzo a cui vuoi promuovere: ";
                std::cin >> c;
                promotion_type = PieceType(std::toupper(c));
             }
-            if (!is_valid_piece_type(promotion_type))
+            if (!is_valid_promotion_type(promotion_type))
                throw IllegalMoveException();
             // Elimino il pedone appena mosso
             kill_piece(to);

@@ -63,8 +63,16 @@ namespace Chess
       return !(*this == other);
    }
 
+   std::string Position::to_string() const {
+      std::string s;
+      s.push_back(((char) ('A' + x)));
+      s.push_back((char) ('1' + y));
+      return s;
+   }
+
+
    std::ostream& operator<<(std::ostream &os, const Position &pos) {
-      return os << ((char) ('A' + pos.x)) << (pos.y + 1);
+      return os << pos.to_string();
    }
 }
 

@@ -41,6 +41,8 @@ namespace Chess
       bool operator==(const Position &other) const;
       // Operatore di disuguaglianza
       bool operator!=(const Position &other) const;
+      // Converte l'oggetto in stringa
+      std::string to_string() const;
    };
 
    std::ostream &operator<<(std::ostream &os, const Position &pos);
