@@ -7,7 +7,7 @@
 #include <Windows.h>
 #define clear std::system("cls")
 #define space "\r\n"
-#define wait Sleep(10)
+#define wait Sleep(1000)
 #endif
 
 #ifdef linux
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
       //Creo la board e la mostro per la prima volta
       Chess::Board b;
       std::cout << b << std::endl;
-      std::fstream file{argv[2]};
+      std::ifstream file{argv[2]};
       int line_counter = 0;
       //Leggo finche il file non è terminato
       while (!file.eof())
@@ -46,11 +46,13 @@ int main(int argc, char *argv[])
          std::string line;
          std::getline(file, line);
          line_counter++;
+         if (line.size() == 0)
+            continue;
          if (!is_read_legal(line))
          {
-            std::cout << "Trovata stringa non valida:" << line << "alla riga numero: " << line_counter << std::endl;
-            std::cout << "Continuo saltando la riga corrente?:S/N" << std::endl
-                      << "NOTA(Potrebbe generare problemi!)";
+            std::cout << "Trovata stringa non valida: '" << line << "' alla riga numero: " << line_counter << std::endl;
+            std::cout << "Continuo saltando la riga corrente?: S/N" << std::endl
+                      << "!Potrebbe generare problemi!:";
             std::cin >> line;
             if (std::toupper(line[0]) == 'S')
                continue;
@@ -71,12 +73,12 @@ int main(int argc, char *argv[])
             std::cout << "Errore irreversibile board, rilevata mossa non valida:" << line;
          }
       }
-      std::cout << ending(b.is_game_over());
+      std::cout << Chess::ending(b.is_game_over());
    }
    else
    {
       Chess::Board b;
-      std::fstream fileIn{argv[2]};
+      std::ifstream fileIn{argv[2]};
       std::ofstream fileOut{argv[3]};
       fileOut << b << std::endl;
       int line_counter = 0;
@@ -84,11 +86,14 @@ int main(int argc, char *argv[])
       {
          std::string line;
          std::getline(fileIn, line);
+
          line_counter++;
          fileOut << "-------------" << space;
+         if (line.size() == 0)
+            continue;
          if (!is_read_legal(line))
          {
-            std::cout << "Trovata stringa non valida:" << line << "alla riga numero: " << line_counter << std::endl;
+            std::cout << "Trovata stringa non valida: '" << line << "' alla riga numero: " << line_counter << std::endl;
             std::cout << "Continuo saltando la riga corrente?:S/N" << std::endl
                       << "NOTA(Potrebbe generare problemi!)";
             std::cin >> line;
@@ -110,31 +115,10 @@ int main(int argc, char *argv[])
          }
       }
 
-      fileOut << ending(b.is_game_over());
+      fileOut << Chess::ending(b.is_game_over());
       fileOut.close();
    }
    return 0;
-}
-
-const char *ending(Chess::Ending e)
-{
-   switch (e)
-   {
-   case Chess::STALEMATE:
-      return "Stallo";
-   case Chess::_50_MOVE_RULE:
-      return "Regola delle 50 mosse";
-   case Chess::INSUFFICIENT_MATERIAL:
-      return "Materiale insufficiente";
-   case Chess::REPETITION:
-      return "Ripetizione di mosse";
-   case Chess::WHITE_CHECKMATE:
-      return "SCACCOMATTO! Vince il bianco";
-   case Chess::BLACK_CHECKMATE:
-      return "SCACCOMATTO! Vince il nero";
-   default:
-      return "La partita non e' finita";
-   }
 }
 
 const bool is_read_legal(std::string line)

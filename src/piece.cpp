@@ -292,6 +292,11 @@ namespace Chess
       return;
    }
 
+   bool Piece::operator==(const Piece& piece) const {
+      return _side == piece._side && _type == piece._type && _position == piece._position;
+   }
+
+
    // Overload operatore toggle per lo schieramento
    Side operator!(const Side &side)
    {

@@ -24,6 +24,8 @@ namespace Chess
       // Il nero ha mattato
       BLACK_CHECKMATE
    };
+   // Ritorna in stringa il finale
+   const char *ending(Chess::Ending e);
 
    class Board
    {
@@ -42,7 +44,7 @@ namespace Chess
       // regola delle 50 mosse
       short _50_move_count{0};
       Side _50_move_start;
-
+      std::vector<std::vector<Piece>> _positions;
    private:
       // Prepara la posizione iniziale riempiendo il vector _pieces
       void initialize(void);
@@ -64,6 +66,8 @@ namespace Chess
       Ending is_checkmate_stalemate(const Side &side) const;
       // Controlla se la posizione non può essere vinta da nessuno a causa di materiale insufficiente
       bool is_insufficient_material() const;
+      // Controlla se la posizione corrente è stata già rivista 3 volte durante la partita
+      bool is_repetition() const;
 
    public:
       // Costruttore che inizializza una partita

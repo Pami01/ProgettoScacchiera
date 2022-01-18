@@ -3,7 +3,6 @@
 #define COMPUTER_CPP
 
 #include <vector>
-#include <exception>
 #include "Computer.h"
 
 namespace Chess
@@ -60,8 +59,9 @@ namespace Chess
          return ROOK;
       case 3:
          return KNIGHT;
+      default: // Impossibile
+         return KING;
       }
-      throw std::exception();
    }
 
 }

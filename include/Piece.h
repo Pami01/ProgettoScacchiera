@@ -55,6 +55,8 @@ namespace Chess
       // Ritorna tutte le posizioni possibili in cui il pezzo corrente si potrebbe muovere,
       //    senza considerare gli altri pezzi nella scacchiera
       void get_moves(std::vector<Position> &v) const;
+
+      bool operator==(const Piece& piece) const;
    };
 
    Side operator!(const Side &side);

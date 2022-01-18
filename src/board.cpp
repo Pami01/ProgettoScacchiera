@@ -8,6 +8,27 @@
 
 namespace Chess
 {
+   const char *ending(Ending e)
+   {
+      switch (e)
+      {
+      case STALEMATE:
+         return "Patta per stallo";
+      case _50_MOVE_RULE:
+         return "Patta per regola delle 50 mosse";
+      case INSUFFICIENT_MATERIAL:
+         return "Patta per materiale insufficiente";
+      case REPETITION:
+         return "Patta per ripetizione";
+      case WHITE_CHECKMATE:
+         return "SCACCOMATTO! Vince il bianco";
+      case BLACK_CHECKMATE:
+         return "SCACCOMATTO! Vince il nero";
+      default:
+         return "La partita non e' finita";
+      }
+   }
+
    /*       COSTRUTTORI       */
 
    Board::Board()
@@ -44,6 +65,8 @@ namespace Chess
       _pieces.push_back(Piece{"F8", BLACK, BISHOP});
       _pieces.push_back(Piece{"G8", BLACK, KNIGHT});
       _pieces.push_back(Piece{"H8", BLACK, ROOK});
+
+      _positions.push_back(_pieces);
    }
 
    void Board::toggle_turn(void)
@@ -307,17 +330,19 @@ namespace Chess
    {
       short white_bishop_color = -1,
             black_bishop_color = -1;
-      bool has_white_night = false,
-           has_black_night = false;
+      bool has_white_knight = false,
+           has_black_knight = false;
 
       for (const Piece &p : _pieces)
       {
-         // C'è ancora abbastanza materiale
          switch (p.type())
          {
+         case KING:
+            break;
          case PAWN:
          case ROOK:
          case QUEEN:
+            // C'è ancora abbastanza materiale
             return false;
          case BISHOP:
          {
@@ -325,7 +350,7 @@ namespace Chess
             if (p.side() == WHITE)
             {
                // Alfiere e cavallo bastano per mattare
-               if (has_white_night)
+               if (has_white_knight)
                   return false;
 
                // Se non è stato impostato, imposto il colore dell'alfiere
@@ -338,7 +363,7 @@ namespace Chess
             else
             {
                // Alfiere e cavallo bastano per mattare
-               if (has_black_night)
+               if (has_black_knight)
                   return false;
 
                // Se non è stato impostato, imposto il colore dell'alfiere
@@ -348,24 +373,24 @@ namespace Chess
                   /* se c'è un alfiere del colore opposto a questo, la partita non è ancora patta */
                   return false;
             }
-            break;
          }
+         break;
          case KNIGHT:
             if (p.side() == WHITE)
             {
                // Due cavalli / Un cavallo e un alfiere  bastano per mattare
-               if (has_white_night || white_bishop_color == -1)
+               if (has_white_knight || white_bishop_color != -1)
                   return false;
 
-               has_white_night = true;
+               has_white_knight = true;
             }
             else
             {
                // Due cavalli / Un cavallo e un alfiere  bastano per mattare
-               if (has_black_night || black_bishop_color == -1)
+               if (has_black_knight || black_bishop_color != -1)
                   return false;
 
-               has_black_night = true;
+               has_black_knight = true;
             }
          }
       }
@@ -494,6 +519,7 @@ namespace Chess
       _pieces.push_back(Piece{to, p_from.side(), p_from.type()});
       // Cambio turno
       toggle_turn();
+      _positions.push_back(_pieces);
       /* FINE MOVIMENTO DEL PEZZO */
 
       /* CASI SPECIALI */
@@ -583,11 +609,47 @@ namespace Chess
          return _50_MOVE_RULE;
       if (is_insufficient_material())
          return INSUFFICIENT_MATERIAL;
+      if (is_repetition())
+         return REPETITION;
       // TODO Repetition
 
       return is_checkmate_stalemate(_turn);
    }
 
+   bool Board::is_repetition(void) const
+   {
+      std::vector<std::vector<Piece>> positions_copy{_positions};
+      for (int i = 0; i < positions_copy.size(); i++)
+      {
+         short repetitions = 1;
+         std::vector<Piece> &curr_pos = positions_copy[i];
+         for (int j = i + 1; j < positions_copy.size(); j++)
+         {
+            std::vector<Piece> &next_pos = positions_copy[j];
+            if (curr_pos.size() != next_pos.size())
+            {
+               continue;
+            }
+            bool found = true;
+            for (const Piece &p : curr_pos)
+            {
+               if (std::find_if(next_pos.begin(), next_pos.end(), [&p](const Piece &other)
+                                { return p == other; }) == next_pos.end())
+               {
+                  found = false;
+                  break;
+               }
+            }
+            if (found)
+            {
+               repetitions++;
+            }
+         }
+         if (repetitions >= 3)
+            return true;
+      }
+      return false;
+   }
 }
 
 #endif

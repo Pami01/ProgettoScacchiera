@@ -1,5 +1,4 @@
 // @author: Pietro Bovolenta
-// TODO Verificare passaggio promozione a file
 #include <iostream>
 #include <fstream>
 #include <time.h>
@@ -9,7 +8,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #define clear std::system("cls")
-#define wait Sleep(0.1)
+#define wait Sleep(50)
 #endif
 
 #ifdef linux
@@ -19,7 +18,6 @@
 
 Chess::Ending player_computer(Chess::Board &b, std::ostream &os);
 Chess::Ending computer_computer(Chess::Board &b, std::ostream &os);
-const char *ending(Chess::Ending e);
 
 int main(int argc, char *argv[])
 {
@@ -50,7 +48,7 @@ int main(int argc, char *argv[])
 
    std::cout << board << std::endl;
 
-   std::cout << ending(game_over) << std::endl;
+   std::cout << Chess::ending(game_over) << std::endl;
 
    return 0;
 }
@@ -62,26 +60,29 @@ Chess::Ending player_computer(Chess::Board &board, std::ostream &os)
 
    Chess::Ending game_over;
 
+   std::cout << "Giochi con il " << (player_side == Chess::WHITE ? "bianco" : "nero") << "\n\n";
+
    do
    {
-      std::cout << board << std::endl;
-
       if (board.turn() == player_side)
       {
+         std::cout << board << std::endl;
+
          std::string move;
          std::getline(std::cin, move);
 
          if (move.size() != 5)
          {
-            std::cout << "Mossa non valida\n\n";
+            clear;
+            std::cout << "La mossa inserita non e' valida. Formato accettato: 'xx xx'\n\n";
             continue;
          }
 
          try
          {
             bool promotion = false;
-            const Chess::Position from = move.substr(0, 2);
-            const Chess::Position to = move.substr(3, 2);
+            const Chess::Position from{move.substr(0, 2)};
+            const Chess::Position to{move.substr(3, 2)};
             if (board.find_piece(from).type() == Chess::PAWN && to.y == (player_side == Chess::WHITE ? 7 : 0))
             {
                promotion = true;
@@ -94,24 +95,31 @@ Chess::Ending player_computer(Chess::Board &board, std::ostream &os)
          }
          catch (Chess::Board::IllegalMoveException e)
          {
+            clear;
             std::cout << "Mossa non valida\n\n";
+            continue;
          }
          catch (Chess::Board::PieceNotFoundException e)
          {
-            std::cout << "Non c'è un pezzo alla posizione iniziale\n\n";
+            clear;
+            std::cout << "Non c'e' un pezzo alla posizione iniziale\n\n";
+            continue;
          }
          catch (Chess::Position::InvalidPositionException e)
          {
-            std::cout << "La mossa inserita non è valida. Formato accettato: 'xx xx'\n\n";
+            clear;
+            std::cout << "La mossa inserita non e' valida. Formato accettato: 'xx xx'\n\n";
+            continue;
          }
+
+         clear;
       }
       else
       {
          computer.move(os);
       }
-
-      clear;
    } while (!(game_over = board.is_game_over()));
+   clear;
    return game_over;
 }
 
@@ -123,7 +131,7 @@ Chess::Ending computer_computer(Chess::Board &board, std::ostream &os)
    Chess::Computer computer2{board, Chess::BLACK};
 
    Chess::Ending game_over;
-   int moves = 0;
+   int moves = 1;
    do
    {
       std::cout << board << std::endl;
@@ -141,25 +149,4 @@ Chess::Ending computer_computer(Chess::Board &board, std::ostream &os)
       clear;
    } while (!(game_over = board.is_game_over()) && moves <= MAX_MOVES);
    return game_over;
-}
-
-const char *ending(Chess::Ending e)
-{
-   switch (e)
-   {
-   case Chess::STALEMATE:
-      return "Stallo";
-   case Chess::_50_MOVE_RULE:
-      return "Regola delle 50 mosse";
-   case Chess::INSUFFICIENT_MATERIAL:
-      return "Materiale insufficiente";
-   case Chess::REPETITION:
-      return "Ripetizione di mosse";
-   case Chess::WHITE_CHECKMATE:
-      return "SCACCOMATTO! Vince il bianco";
-   case Chess::BLACK_CHECKMATE:
-      return "SCACCOMATTO! Vince il nero";
-   default:
-      return "La partita non e' finita";
-   }
 }
