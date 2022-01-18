@@ -4,13 +4,13 @@
 #include <time.h>
 #include "Board.h"
 #include "Computer.h"
-
+// Macro per utilizzare il codice su windows
 #ifdef _WIN32
 #include <Windows.h>
 #define clear std::system("cls")
-#define wait Sleep(50)
+#define wait Sleep(500)
 #endif
-
+// Macro per utilizzare il codice su linux
 #ifdef linux
 #include <cstdlib>
 #define clear std::system("clear")
@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 
    std::ofstream ofs(match_name + ".txt");
 
+   clear;
    if (std::string(argv[1]) == "pc")
       game_over = player_computer(board, ofs);
    else
@@ -80,15 +81,12 @@ Chess::Ending player_computer(Chess::Board &board, std::ostream &os)
 
          try
          {
-            bool promotion = false;
             const Chess::Position from{move.substr(0, 2)};
             const Chess::Position to{move.substr(3, 2)};
-            if (board.find_piece(from).type() == Chess::PAWN && to.y == (player_side == Chess::WHITE ? 7 : 0))
-            {
-               promotion = true;
-            }
+            bool promotion = board.find_piece(from).type() == Chess::PAWN && to.y == (player_side == Chess::WHITE ? 7 : 0);
             board.move(from, to);
             os << from << ' ' << to;
+            // Caso promozione, mando in output il pezzo a cui ho promosso
             if (promotion)
                os << ' ' << (char)(board.find_piece(to).type());
             os << std::endl;

@@ -44,7 +44,9 @@ namespace Chess
       // regola delle 50 mosse
       short _50_move_count{0};
       Side _50_move_start;
+      // Elenco di tutte le posizione avvenute nella scacchiera (per controllare la ripetizione di mosse)
       std::vector<std::vector<Piece>> _positions;
+
    private:
       // Prepara la posizione iniziale riempiendo il vector _pieces
       void initialize(void);

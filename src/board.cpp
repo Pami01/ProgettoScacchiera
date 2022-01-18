@@ -442,6 +442,41 @@ namespace Chess
       return STALEMATE;
    }
 
+   bool Board::is_repetition(void) const
+   {
+      std::vector<std::vector<Piece>> positions_copy{_positions};
+      for (int i = 0; i < positions_copy.size(); i++)
+      {
+         short repetitions = 1;
+         std::vector<Piece> &curr_pos = positions_copy[i];
+         for (int j = i + 1; j < positions_copy.size(); j++)
+         {
+            std::vector<Piece> &next_pos = positions_copy[j];
+            if (curr_pos.size() != next_pos.size())
+            {
+               continue;
+            }
+            bool found = true;
+            for (const Piece &p : curr_pos)
+            {
+               if (std::find_if(next_pos.begin(), next_pos.end(), [&p](const Piece &other)
+                                { return p == other; }) == next_pos.end())
+               {
+                  found = false;
+                  break;
+               }
+            }
+            if (found)
+            {
+               repetitions++;
+            }
+         }
+         if (repetitions >= 3)
+            return true;
+      }
+      return false;
+   }
+
    /*       OVERLOAD OPERATORI       */
 
    std::ostream &operator<<(std::ostream &os, const Board &b)
@@ -544,10 +579,11 @@ namespace Chess
          {
             if (promotion_type == PieceType::KING || promotion_type == PieceType::PAWN)
             {
-               char c;
                std::cout << "Inserisci il carattere del pezzo a cui vuoi promuovere: ";
-               std::cin >> c;
-               promotion_type = PieceType(std::toupper(c));
+               std::string line;
+               std::getline(std::cin, line);
+               if (line.size() > 0)
+                  promotion_type = PieceType(std::toupper(line[0]));
             }
             if (!is_valid_promotion_type(promotion_type))
                throw IllegalMoveException();
@@ -611,44 +647,7 @@ namespace Chess
          return INSUFFICIENT_MATERIAL;
       if (is_repetition())
          return REPETITION;
-      // TODO Repetition
-
       return is_checkmate_stalemate(_turn);
-   }
-
-   bool Board::is_repetition(void) const
-   {
-      std::vector<std::vector<Piece>> positions_copy{_positions};
-      for (int i = 0; i < positions_copy.size(); i++)
-      {
-         short repetitions = 1;
-         std::vector<Piece> &curr_pos = positions_copy[i];
-         for (int j = i + 1; j < positions_copy.size(); j++)
-         {
-            std::vector<Piece> &next_pos = positions_copy[j];
-            if (curr_pos.size() != next_pos.size())
-            {
-               continue;
-            }
-            bool found = true;
-            for (const Piece &p : curr_pos)
-            {
-               if (std::find_if(next_pos.begin(), next_pos.end(), [&p](const Piece &other)
-                                { return p == other; }) == next_pos.end())
-               {
-                  found = false;
-                  break;
-               }
-            }
-            if (found)
-            {
-               repetitions++;
-            }
-         }
-         if (repetitions >= 3)
-            return true;
-      }
-      return false;
    }
 }
 
