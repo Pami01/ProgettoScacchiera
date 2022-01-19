@@ -72,10 +72,10 @@ Chess::Ending player_computer(Chess::Board &board, std::ostream &os)
          std::string move;
          std::getline(std::cin, move);
 
-         if (move.size() != 5)
+         if (move.size() != 5 && move.size() != 7)
          {
             clear;
-            std::cout << "La mossa inserita non e' valida. Formato accettato: 'xx xx'\n\n";
+            std::cout << "La mossa inserita non e' valida. Formato accettato: 'xx xx', in caso di promozione 'xx xx p'\n\n";
             continue;
          }
 
@@ -84,7 +84,10 @@ Chess::Ending player_computer(Chess::Board &board, std::ostream &os)
             const Chess::Position from{move.substr(0, 2)};
             const Chess::Position to{move.substr(3, 2)};
             bool promotion = board.find_piece(from).type() == Chess::PAWN && to.y == (player_side == Chess::WHITE ? 7 : 0);
-            board.move(from, to);
+            if (move.size() == 5)
+               board.move(from, to);
+            else
+               board.move(from, to, Chess::PieceType(std::toupper(move[6])));
             os << from << ' ' << to;
             // Caso promozione, mando in output il pezzo a cui ho promosso
             if (promotion)
@@ -106,7 +109,7 @@ Chess::Ending player_computer(Chess::Board &board, std::ostream &os)
          catch (Chess::Position::InvalidPositionException e)
          {
             clear;
-            std::cout << "La mossa inserita non e' valida. Formato accettato: 'xx xx'\n\n";
+            std::cout << "La posizione inserita non e' valida. Controlla che la lettera sia tra 'A' e 'H' e il numero tra 1 e 8\n\n";
             continue;
          }
 

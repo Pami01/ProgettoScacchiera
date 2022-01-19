@@ -525,6 +525,19 @@ namespace Chess
       const Piece p_from = find_piece(from);
       if (!can_move(p_from, to))
          throw IllegalMoveException();
+      // Controllo la promozione
+      if (p_from.type() == PAWN && to.y == (p_from.side() == WHITE ? 7 : 0)) {
+         if (!is_valid_promotion_type(promotion_type))
+         {
+            std::cout << "Inserisci il carattere del pezzo a cui vuoi promuovere: ";
+            std::string line;
+            std::getline(std::cin, line);
+            if (line.size() > 0)
+               promotion_type = PieceType(std::toupper(line[0]));
+         }
+         if (!is_valid_promotion_type(promotion_type))
+            throw IllegalMoveException();
+      }
 
       // Gestione regola delle 50 mosse
       try
@@ -577,16 +590,6 @@ namespace Chess
          // Promozione
          if (to.y == (p_from.side() == WHITE ? 7 : 0))
          {
-            if (promotion_type == PieceType::KING || promotion_type == PieceType::PAWN)
-            {
-               std::cout << "Inserisci il carattere del pezzo a cui vuoi promuovere: ";
-               std::string line;
-               std::getline(std::cin, line);
-               if (line.size() > 0)
-                  promotion_type = PieceType(std::toupper(line[0]));
-            }
-            if (!is_valid_promotion_type(promotion_type))
-               throw IllegalMoveException();
             // Elimino il pedone appena mosso
             kill_piece(to);
             // Sostituisco il pedone con la sua promozione
