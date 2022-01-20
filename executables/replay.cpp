@@ -6,14 +6,12 @@
 #ifdef _WIN32
 #include <Windows.h>
 #define clear std::system("cls")
-#define space "\r\n"
 #define wait Sleep(1000)
 #endif
 
 #ifdef linux
 #include <unistd.h>
 #define clear std::system("clear")
-#define space "\n"
 #define wait sleep(1)
 #endif
 
@@ -89,7 +87,7 @@ int main(int argc, char *argv[])
          std::getline(fileIn, line);
 
          line_counter++;
-         fileOut << "-------------" << space;
+         fileOut << "-------------" << std::endl;
          if (line.size() == 0)
             continue;
          if (!is_read_legal(line))
