@@ -11,9 +11,10 @@
 #endif
 
 #ifdef linux
-#include <cstdlib>
+#include <unistd.h>
 #define clear std::system("clear")
 #define space "\n"
+#define wait sleep(1)
 #endif
 
 const char *ending(Chess::Ending e);
@@ -62,10 +63,10 @@ int main(int argc, char *argv[])
          clear;
          try
          {
-            std::string promotionType = "K";
+            char promotionType = 'K';
             if (line.size() == 7)
-               promotionType = line.substr(6, 1);
-            b.move(line.substr(0, 2), line.substr(3, 2), Chess::PieceType(promotionType[0]));
+               promotionType = line[6];
+            b.move(line.substr(0, 2), line.substr(3, 2), Chess::PieceType(promotionType));
             std::cout << b << std::endl;
          }
          catch (Chess::Board::IllegalMoveException e)
@@ -103,10 +104,10 @@ int main(int argc, char *argv[])
          }
          try
          {
-            std::string promotionType = "K";
+            char promotionType = 'K';
             if (line.size() == 7)
-               promotionType = line.substr(6, 1);
-            b.move(line.substr(0, 2), line.substr(3, 2), Chess::PieceType(promotionType[0]));
+               promotionType = line[6];
+            b.move(line.substr(0, 2), line.substr(3, 2), Chess::PieceType(promotionType));
             fileOut << b << std::endl;
          }
          catch (Chess::Board::IllegalMoveException e)

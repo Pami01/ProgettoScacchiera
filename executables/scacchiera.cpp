@@ -8,12 +8,13 @@
 #ifdef _WIN32
 #include <Windows.h>
 #define clear std::system("cls")
-#define wait Sleep(500)
+#define wait Sleep(1000)
 #endif
 // Macro per utilizzare il codice su linux
 #ifdef linux
-#include <cstdlib>
+#include <unistd.h>
 #define clear std::system("clear")
+#define wait sleep(1)
 #endif
 
 Chess::Ending player_computer(Chess::Board &b, std::ostream &os);
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
 
    ofs.close();
 
-   std::cout << board << std::endl;
+   std::cout << board << "\n\n";
 
    std::cout << Chess::ending(game_over) << std::endl;
 
