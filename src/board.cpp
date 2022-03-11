@@ -444,14 +444,13 @@ namespace Chess
 
    bool Board::is_repetition(void) const
    {
-      std::vector<std::vector<Piece>> positions_copy{_positions};
-      for (int i = 0; i < positions_copy.size(); i++)
+      for (int i = 0; i < _positions.size(); i++)
       {
          short repetitions = 1;
-         std::vector<Piece> &curr_pos = positions_copy[i];
-         for (int j = i + 1; j < positions_copy.size(); j++)
+         const std::vector<Piece> &curr_pos = _positions[i];
+         for (int j = i + 1; j < _positions.size(); j++)
          {
-            std::vector<Piece> &next_pos = positions_copy[j];
+            const std::vector<Piece> &next_pos = _positions[j];
             if (curr_pos.size() != next_pos.size())
             {
                continue;
@@ -506,6 +505,19 @@ namespace Chess
    }
    /*       FUNZIONALITA' DI GIOCO       */
 
+   Piece &Board::find_piece(const Position &position)
+   {
+      auto it = std::find_if(_pieces.begin(),
+                             _pieces.end(),
+                             [&position](const Piece &p)
+                             {
+                                return p.position() == position;
+                             });
+      if (it != _pieces.end())
+         return *it;
+      throw PieceNotFoundException();
+   }
+
    Piece Board::find_piece(const Position &position) const
    {
       auto it = std::find_if(_pieces.begin(),
@@ -522,11 +534,12 @@ namespace Chess
    void Board::move(const Position from, const Position to, PieceType promotion_type)
    {
       // Lancia una PieceNotFoundException se non viene trovato un pezzo alla posizione from
-      const Piece p_from = find_piece(from);
+      Piece &p_from = find_piece(from);
       if (!can_move(p_from, to))
          throw IllegalMoveException();
       // Controllo la promozione
-      if (p_from.type() == PAWN && to.y == (p_from.side() == WHITE ? 7 : 0)) {
+      if (p_from.type() == PAWN && to.y == (p_from.side() == WHITE ? 7 : 0))
+      {
          if (!is_valid_promotion_type(promotion_type))
          {
             std::cout << "Inserisci il carattere del pezzo a cui vuoi promuovere: ";
@@ -560,14 +573,12 @@ namespace Chess
          _50_move_start = p_from.side();
 
       /* MOVIMENTO EFFETTIVO DEL PEZZO */
-      // Elimino il pezzo nella posizione iniziale e in quella finale
-      kill_piece(from);
+      // Elimino il pezzo nella posizione finale (che viene mangiato)
       kill_piece(to);
-      // Reinserisco il pezzo nella sua nuova posizione
-      _pieces.push_back(Piece{to, p_from.side(), p_from.type()});
+      // Muovo il pezzo selezionato nella posizione finale
+      p_from.move(to);
       // Cambio turno
       toggle_turn();
-      _positions.push_back(_pieces);
       /* FINE MOVIMENTO DEL PEZZO */
 
       /* CASI SPECIALI */
@@ -617,10 +628,9 @@ namespace Chess
          if (abs(from.x - to.x) == 2)
          {
             short castle_direction = from.x < to.x ? 1 : -1;
-            // Elimino la torre
-            kill_piece(Position{(short)(castle_direction == 1 ? 7 : 0), from.y});
-            // Rimpiazzo la torre a fianco al re
-            _pieces.push_back(Piece{{(short)(from.x + castle_direction), from.y}, p_from.side(), ROOK});
+            // Sposto la torre vicino al re
+            Piece &rook = find_piece(Position{(short)(castle_direction == 1 ? 7 : 0), from.y});
+            rook.move(Position{(short)(from.x + castle_direction), from.y});
          }
       }
       else if (p_from.type() == ROOK) /* Tolgo la possibilità di arroccare al re se sto muovendo una torre */
@@ -640,6 +650,8 @@ namespace Chess
                _can_black_castle_left = false;
          }
       }
+
+      _positions.push_back(_pieces);
    }
 
    Ending Board::is_game_over(void) const

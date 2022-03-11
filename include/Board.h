@@ -87,6 +87,8 @@ namespace Chess
       // Cerca il pezzo ad una certa posizione e lo ritorna
       // Lancia una PieceNotFoundException se alla posizione inserita non c'è alcun pezzo
       Piece find_piece(const Position &position) const;
+      Piece &find_piece(const Position &position);
+
 
       // Getter per il turno attuale
       Side turn(void) const;
